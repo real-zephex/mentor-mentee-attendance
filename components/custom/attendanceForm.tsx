@@ -37,6 +37,8 @@ import {
 import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 
+import { toast } from "sonner";
+
 const NewAttendanceObject = z.object({
   class_session_id: z.string(),
 });
@@ -70,12 +72,12 @@ const NewAttendanceForm = () => {
 
   const handleSubmit = async (data: NewAttendanceType) => {
     if (form.getValues("class_session_id") === "") {
-      alert("Please select a class session!");
+      toast.error("Please select a class session!");
       return;
     }
 
     if (stuRecords.length === 0) {
-      alert("No attendance marked! Please mark atleast one student present.");
+      toast.error("No attendance marked! Please mark atleast one student present.");
       return;
     }
 
@@ -102,13 +104,9 @@ const NewAttendanceForm = () => {
     }
 
     if (successIds.length === entries.length) {
-      alert(
-        `Attendance added successfully for ${successIds.length} students. `,
-      );
+      toast.success(`Attendance added successfully for ${successIds.length} students.`);
     } else {
-      alert(
-        `Attendance added successfully for ${successIds.length} students. Total: ${entries.length} `,
-      );
+      toast.warning(`Attendance added for ${successIds.length}/${entries.length} students.`);
     }
   };
 

@@ -18,6 +18,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
+import { toast } from "sonner";
+
 const NewSessionSchema = z.object({
   session_id: z.string(),
   session_date: z.string(),
@@ -44,9 +46,20 @@ const NewSessionForm = () => {
   const handleSubmit = async (values: NewSessionType) => {
     try {
       const result = await mutate(values);
-      if (result.status) console.info("Session added successfully");
-      alert(result.message);
+      if (result.status) {
+        toast.success("Session added successfully");
+        form.reset({
+          session_id: crypto.randomUUID(),
+          session_date: new Date().toISOString().split("T")[0],
+          start_time: "09:00",
+          end_time: "17:00",
+          remarks: "",
+        });
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
+      toast.error("An unexpected error occurred");
       console.error(`Error adding session: ${error}`);
     }
   };

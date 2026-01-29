@@ -18,6 +18,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
+import { toast } from "sonner";
+
 const newStudentDetailsSchema = z.object({
   roll_number: z.string({ error: "Roll number must be a number" }),
   name: z.string({ error: "Name must be a string" }),
@@ -47,9 +49,14 @@ const NewStudent = () => {
   const handleSubmit = async (values: newStudentDetails) => {
     try {
       const result = await mutate(values);
-      if (result.status) console.info("Student record added successfully");
-      alert(result.message);
+      if (result.status) {
+        toast.success("Student record added successfully");
+        form.reset();
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
+      toast.error("An unexpected error occurred");
       console.error("Error adding student record:", error);
     }
   };
