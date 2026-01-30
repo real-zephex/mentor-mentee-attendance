@@ -77,7 +77,9 @@ const NewAttendanceForm = () => {
     }
 
     if (stuRecords.length === 0) {
-      toast.error("No attendance marked! Please mark atleast one student present.");
+      toast.error(
+        "No attendance marked! Please mark atleast one student present.",
+      );
       return;
     }
 
@@ -97,6 +99,7 @@ const NewAttendanceForm = () => {
       const result = await createAttendance(i);
       if (result.status) {
         successIds.push(result.id!);
+        toast(`Attendance added successfully for student ${i.student_id}`);
         console.info(`ID: ${result.id} \nAttendance added successfully`);
       } else {
         console.error(`Error adding attendance: ${result.message}`);
@@ -104,9 +107,13 @@ const NewAttendanceForm = () => {
     }
 
     if (successIds.length === entries.length) {
-      toast.success(`Attendance added successfully for ${successIds.length} students.`);
+      toast.success(
+        `Attendance added successfully for ${successIds.length} students.`,
+      );
     } else {
-      toast.warning(`Attendance added for ${successIds.length}/${entries.length} students.`);
+      toast.warning(
+        `Attendance added for ${successIds.length}/${entries.length} students.`,
+      );
     }
   };
 
