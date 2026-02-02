@@ -146,11 +146,10 @@ const NewAttendanceForm = () => {
         <FormField
           control={form.control}
           name="class_session_id"
-          render={({ field }) => (
+          render={({}) => (
             <FormItem>
               <FormLabel>Class Session ID</FormLabel>
               <FormControl>
-                {/*<Input {...field} disabled />*/}
                 <Select
                   disabled={sessions?.todaySessionCount === 0}
                   onValueChange={(e) => form.setValue("class_session_id", e)}

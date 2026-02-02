@@ -1,5 +1,6 @@
 import { mutation } from "../_generated/server";
 import { attendanceObject, sessionObject, studentsObject } from "../types";
+import { v } from "convex/values";
 
 type AddStudentsProps = {
   status: boolean;
@@ -76,6 +77,37 @@ export const addAttendance = mutation({
         status: false,
         id: null,
         message: "An error occurred while adding the attendance",
+      };
+    }
+  },
+});
+
+export const removeStudent = mutation({
+  args: { id: v.id("students") },
+  handler: async (ctx, args) => {
+    try {
+      const studentAttendance = await ctx.db
+        .query("attendance")
+        .withIndex("by_student", (q) => q.eq("student_id", args.id))
+        .collect();
+
+      for (const attendanceRecord of studentAttendance) {
+        await ctx.db.delete("attendance", attendanceRecord._id);
+      }
+
+      const removeId = await ctx.db.delete("students", args.id);
+
+      return {
+        status: true,
+        id: removeId,
+        message: "Student removed successfully",
+      };
+    } catch (error) {
+      console.error(`Error in Student Management: ${error}`);
+      return {
+        status: false,
+        id: null,
+        message: "An error occurred while removing the student",
       };
     }
   },

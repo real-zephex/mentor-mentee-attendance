@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import StudentsList from "./studentsList";
 
 import { toast } from "sonner";
 
@@ -62,105 +65,130 @@ const NewStudent = () => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <div className="flex flex-col gap-8">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} autoComplete="off" />
-                </FormControl>
-                <FormDescription>Student name</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+    <div className="flex flex-col gap-8">
+      {/* Add Student Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Student</CardTitle>
+          <CardDescription>Fill in the details to register a new student.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)}>
+              <div className="flex flex-col gap-8">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} autoComplete="off" />
+                      </FormControl>
+                      <FormDescription>Student name</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="roll_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Roll Number</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="25100030043"
-                    {...field}
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <FormDescription>Student roll number</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="roll_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Roll Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="25100030043"
+                          {...field}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      <FormDescription>Student roll number</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="john.doe@example.com"
-                    {...field}
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <FormDescription>Student email</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="john.doe@example.com"
+                          {...field}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      <FormDescription>Student email</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="98944 34345"
-                    {...field}
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <FormDescription>Student phonen number</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="98944 34345"
+                          {...field}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      <FormDescription>Student phone number</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <FormField
-            control={form.control}
-            name="dob"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Date of Birth</FormLabel>
-                <FormControl>
-                  <Input
-                    type="date"
-                    placeholder="YYYY-MM-DD"
-                    {...field}
-                    autoComplete="off"
-                  />
-                </FormControl>
-                <FormDescription>Student date of birth</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                <FormField
+                  control={form.control}
+                  name="dob"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date of Birth</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          placeholder="YYYY-MM-DD"
+                          {...field}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      <FormDescription>Student date of birth</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <Button type="submit">Submit</Button>
-        </div>
-      </form>
-    </Form>
+                <Button type="submit">Submit</Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      {/* Separator */}
+      <Separator className="my-4" />
+
+      {/* Students List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Students</CardTitle>
+          <CardDescription>View all students currently in the database.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StudentsList />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
