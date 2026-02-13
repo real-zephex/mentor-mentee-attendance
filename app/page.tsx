@@ -1,65 +1,68 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import ManageClasses from "@/components/custom/classes/classesTable";
+import StudentTable from "@/components/custom/students/studentsTable";
+import SessionsTable from "@/components/custom/sessions/sessionsTable";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DashboardOverview } from "@/components/custom/dashboardOverview";
+import { UserCircle, BookOpen, Calendar } from "lucide-react";
+
+const Homepage = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="container mx-auto py-6 px-4 space-y-8">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Manage your classes and track student attendance.</p>
+      </div>
+
+      <DashboardOverview />
+
+      <Tabs defaultValue="students" className="w-full space-y-6">
+        <div className="flex items-center justify-between border-b pb-1 overflow-x-auto">
+          <TabsList className="bg-transparent h-auto p-0 gap-6">
+            <TabsTrigger
+              value="students"
+              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              <div className="flex items-center gap-2">
+                <UserCircle className="size-4" />
+                Students
+              </div>
+            </TabsTrigger>
+            <TabsTrigger
+              value="classes"
+              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <div className="flex items-center gap-2">
+                <BookOpen className="size-4" />
+                Classes
+              </div>
+            </TabsTrigger>
+            <TabsTrigger
+              value="sessions"
+              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
+            >
+              <div className="flex items-center gap-2">
+                <Calendar className="size-4" />
+                Sessions
+              </div>
+            </TabsTrigger>
+          </TabsList>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        <TabsContent value="students" className="mt-0 border-none p-0 outline-none">
+          <StudentTable />
+        </TabsContent>
+        <TabsContent value="classes" className="mt-0 border-none p-0 outline-none">
+          <ManageClasses />
+        </TabsContent>
+        <TabsContent value="sessions" className="mt-0 border-none p-0 outline-none">
+          <SessionsTable />
+        </TabsContent>
+      </Tabs>
+    </main>
   );
-}
+};
+
+export default Homepage;
