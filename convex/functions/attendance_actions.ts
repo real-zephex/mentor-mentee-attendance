@@ -10,14 +10,11 @@ export const BatchAttendance = async (ctx: MutationCtx, data: Attendance[]) => {
   await requireAuth(ctx);
   try {
     for (const entry of data) {
-      // Check if attendance already exists for this student and session
+      // Use composite index for better performance
       const existing = await ctx.db
         .query("attendance")
-        .filter((q) =>
-          q.and(
-            q.eq(q.field("session"), entry.session),
-            q.eq(q.field("student"), entry.student),
-          ),
+        .withIndex("by_session", (q) =>
+          q.eq("session", entry.session).eq("student", entry.student),
         )
         .unique();
 
@@ -31,7 +28,7 @@ export const BatchAttendance = async (ctx: MutationCtx, data: Attendance[]) => {
   } catch (error) {
     console.error("error while adding/updating attendance: ", error);
     if (error instanceof ConvexError) throw error;
-    return new ConvexError((error as Error).message);
+    throw new ConvexError((error as Error).message);
   }
 };
 

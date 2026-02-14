@@ -55,7 +55,9 @@ const SessionForm = ({
   id?: Id<"sessions">;
   action: "patch" | "add";
 }) => {
-  const patchSession = useMutation(api.functions.sessions_actions.patchSessions);
+  const patchSession = useMutation(
+    api.functions.sessions_actions.patchSessions,
+  );
   const newSession = useMutation(api.functions.sessions_actions.newSession);
 
   const form = useForm<SessionEntryType>({
@@ -98,7 +100,7 @@ const SessionForm = ({
     } catch (error) {
       toast.error(`Error: ${(error as Error).message}`);
       console.error(
-        `Error occurred while ${action === "patch" ? "editing" : "adding"} session: ${(error as Error).message}`
+        `Error occurred while ${action === "patch" ? "editing" : "adding"} session: ${(error as Error).message}`,
       );
     }
   }
@@ -112,7 +114,9 @@ const SessionForm = ({
           render={({ field }) => (
             <FormItem>
               <div className="flex justify-between items-end">
-                <FormLabel className="text-sm font-semibold">Session Name</FormLabel>
+                <FormLabel className="text-sm font-semibold">
+                  Session Name
+                </FormLabel>
               </div>
               <FormControl>
                 <Input
@@ -121,7 +125,7 @@ const SessionForm = ({
                   placeholder="Introduction to Programming"
                   className={cn(
                     "bg-background/70 border-border/70",
-                    "focus-visible:ring-primary/40"
+                    "focus-visible:ring-primary/40",
                   )}
                 />
               </FormControl>
@@ -147,7 +151,7 @@ const SessionForm = ({
                   <SelectTrigger
                     className={cn(
                       "bg-background/70 border-border/70",
-                      "focus:ring-primary/40"
+                      "focus:ring-primary/40",
                     )}
                   >
                     <SelectValue
@@ -187,7 +191,7 @@ const SessionForm = ({
                   {...field}
                   className={cn(
                     "bg-background/70 border-border/70",
-                    "focus-visible:ring-primary/40"
+                    "focus-visible:ring-primary/40",
                   )}
                 />
               </FormControl>
@@ -205,14 +209,16 @@ const SessionForm = ({
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold">Start Time</FormLabel>
+                <FormLabel className="text-sm font-semibold">
+                  Start Time
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="time"
                     {...field}
                     className={cn(
                       "bg-background/70 border-border/70",
-                      "focus-visible:ring-primary/40"
+                      "focus-visible:ring-primary/40",
                     )}
                   />
                 </FormControl>
@@ -226,14 +232,16 @@ const SessionForm = ({
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold">End Time</FormLabel>
+                <FormLabel className="text-sm font-semibold">
+                  End Time
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="time"
                     {...field}
                     className={cn(
                       "bg-background/70 border-border/70",
-                      "focus-visible:ring-primary/40"
+                      "focus-visible:ring-primary/40",
                     )}
                   />
                 </FormControl>
@@ -248,14 +256,16 @@ const SessionForm = ({
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-semibold">Remarks (Optional)</FormLabel>
+              <FormLabel className="text-sm font-semibold">
+                Remarks (Optional)
+              </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
                   placeholder="Add any additional notes..."
                   className={cn(
                     "bg-background/70 border-border/70 min-h-20",
-                    "focus-visible:ring-primary/40"
+                    "focus-visible:ring-primary/40",
                   )}
                 />
               </FormControl>

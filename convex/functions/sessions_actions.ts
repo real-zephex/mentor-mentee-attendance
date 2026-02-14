@@ -10,28 +10,42 @@ export type ReturnType = Doc<"sessions">;
 export const newSession = mutation({
   args: Sessions,
   handler: async (ctx, args) => {
-    try {
-      await requireAuth(ctx);
-      const newClass = await ctx.db.insert("sessions", args);
+    await requireAuth(ctx);
 
-      const getStudents = await ctx.db
+    try {
+      // Create the session first
+      const newSessionId = await ctx.db.insert("sessions", args);
+
+      // Get students for this class
+      const students = await ctx.db
         .query("students")
         .withIndex("by_class", (q) => q.eq("class", args.class))
         .collect();
 
-      const attendanceMap = getStudents.map((i) => {
-        return {
-          status: "UM" as const,
-          session: newClass,
-          student: i._id,
-        };
-      });
+      // Validate that the class has students
+      if (students.length === 0) {
+        // Rollback: delete the session we just created
+        await ctx.db.delete("sessions", newSessionId);
+        throw new ConvexError(
+          "Cannot create session: no students enrolled in this class",
+        );
+      }
+
+      // Create default attendance records for all students
+      const attendanceMap = students.map((student) => ({
+        status: "UM" as const,
+        session: newSessionId,
+        student: student._id,
+      }));
+
       await BatchAttendance(ctx, attendanceMap);
 
-      return newClass;
+      return newSessionId;
     } catch (error) {
-      console.error(`Failed to insert new session: ${error}`);
-      throw new ConvexError((error as Error).message);
+      console.error(`Failed to create session: ${error}`);
+      throw error instanceof ConvexError
+        ? error
+        : new ConvexError((error as Error).message);
     }
   },
 });

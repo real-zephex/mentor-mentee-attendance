@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { Students } from "../types";
-import { requireAdminAuth, requireAuth } from "./helper";
+import { requireAuth } from "./helper";
 
 export const newStudents = mutation({
   args: Students,
@@ -34,6 +34,18 @@ export const deleteStudent = mutation({
   args: { student_id: v.id("students") },
   handler: async (ctx, args) => {
     await requireAuth(ctx);
+
+    // Delete associated attendance records first to prevent orphaned data
+    const attendanceRecords = await ctx.db
+      .query("attendance")
+      .withIndex("by_student", (q) => q.eq("student", args.student_id))
+      .collect();
+
+    for (const record of attendanceRecords) {
+      await ctx.db.delete("attendance", record._id);
+    }
+
+    // Now safe to delete the student
     await ctx.db.delete("students", args.student_id);
   },
 });
