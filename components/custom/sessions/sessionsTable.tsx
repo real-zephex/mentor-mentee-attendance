@@ -43,7 +43,7 @@ const formatDate = (dateStr: string) => {
   });
 };
 
-const to12Hour = (time24: string) => {
+export const to12Hour = (time24: string) => {
   const [hours, minutes] = time24.split(":");
   const h = parseInt(hours);
   const ampm = h >= 12 ? "PM" : "AM";
@@ -52,13 +52,21 @@ const to12Hour = (time24: string) => {
 };
 
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 const SessionsTable = () => {
   const sessions = useQuery(api.functions.sessions_queries.GetAllSessions);
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
-  const deleteSession = useMutation(api.functions.sessions_actions.deleteSession);
+  const deleteSession = useMutation(
+    api.functions.sessions_actions.deleteSession,
+  );
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [classMap, setClassMap] = useState<Record<string, string>>({});
@@ -94,7 +102,7 @@ const SessionsTable = () => {
     if (searchQuery) {
       const query = searchQuery.toLocaleLowerCase();
       newSessions = newSessions.filter((i) =>
-        i.name.toLocaleLowerCase().includes(query)
+        i.name.toLocaleLowerCase().includes(query),
       );
     }
 
@@ -108,7 +116,10 @@ const SessionsTable = () => {
       if (sortBy === "newest") return b._creationTime - a._creationTime;
       if (sortBy === "oldest") return a._creationTime - b._creationTime;
       if (sortBy === "date")
-        return new Date(a.session_date).getTime() - new Date(b.session_date).getTime();
+        return (
+          new Date(a.session_date).getTime() -
+          new Date(b.session_date).getTime()
+        );
       if (sortBy === "name") return a.name.localeCompare(b.name);
       return 0;
     });
@@ -123,6 +134,7 @@ const SessionsTable = () => {
       toast.success(`Session "${sessionName}" deleted successfully`);
       setDeleteDialogOpen(null);
     } catch (error) {
+      console.error("Error while deleting session: ", error);
       toast.error("Failed to delete session");
     } finally {
       setIsDeleting(null);
@@ -146,7 +158,9 @@ const SessionsTable = () => {
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <div className="space-y-1">
           <CardTitle className="text-2xl font-bold">Sessions</CardTitle>
-          <CardDescription>Plan and track your class sessions and attendance</CardDescription>
+          <CardDescription>
+            Plan and track your class sessions and attendance
+          </CardDescription>
         </div>
 
         <Dialog>
@@ -179,7 +193,7 @@ const SessionsTable = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Select defaultValue="all" onValueChange={(v) => setClassFilter(v)}>
-              <SelectTrigger className="w-[150px] bg-background/50 border-muted">
+              <SelectTrigger className="w-37.5 bg-background/50 border-muted">
                 <SelectValue placeholder="Class" />
               </SelectTrigger>
               <SelectContent>
@@ -194,7 +208,7 @@ const SessionsTable = () => {
               </SelectContent>
             </Select>
             <Select defaultValue="newest" onValueChange={(v) => setSortBy(v)}>
-              <SelectTrigger className="w-[150px] bg-background/50 border-muted">
+              <SelectTrigger className="w-37.5 bg-background/50 border-muted">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
               <SelectContent>
@@ -215,16 +229,25 @@ const SessionsTable = () => {
               <TableRow>
                 <TableHead className="font-semibold">Session Name</TableHead>
                 <TableHead className="font-semibold">Date</TableHead>
-                <TableHead className="font-semibold text-center">Time Window</TableHead>
+                <TableHead className="font-semibold text-center">
+                  Time Window
+                </TableHead>
                 <TableHead className="font-semibold">Class</TableHead>
-                <TableHead className="font-semibold text-right">Actions</TableHead>
+                <TableHead className="font-semibold text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sessionsRecords && sessionsRecords.length > 0 ? (
                 sessionsRecords.map((session) => (
-                  <TableRow key={session._id} className="hover:bg-muted/20 transition-colors">
-                    <TableCell className="font-medium">{session.name}</TableCell>
+                  <TableRow
+                    key={session._id}
+                    className="hover:bg-muted/20 transition-colors"
+                  >
+                    <TableCell className="font-medium">
+                      {session.name}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="size-3.5 text-muted-foreground" />
@@ -232,12 +255,19 @@ const SessionsTable = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="outline" className="font-mono text-[10px] bg-muted/50">
-                        {to12Hour(session.start_time)} - {to12Hour(session.end_time)}
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-[10px] bg-muted/50"
+                      >
+                        {to12Hour(session.start_time)} -{" "}
+                        {to12Hour(session.end_time)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-normal bg-sky-500/10 text-sky-600 border-none">
+                      <Badge
+                        variant="secondary"
+                        className="font-normal bg-sky-500/10 text-sky-600 border-none"
+                      >
                         {classMap[String(session.class)] || "Unknown"}
                       </Badge>
                     </TableCell>
@@ -245,7 +275,11 @@ const SessionsTable = () => {
                       <div className="flex justify-end items-center gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="size-8 hover:text-sky-500">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-8 hover:text-sky-500"
+                            >
                               <Edit2Icon size={14} />
                             </Button>
                           </DialogTrigger>
@@ -272,17 +306,26 @@ const SessionsTable = () => {
                           }
                         >
                           <DialogTrigger asChild>
-                            <Button size="icon" variant="ghost" className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            >
                               <Trash size={14} />
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Are you absolutely sure?</DialogTitle>
+                              <DialogTitle>
+                                Are you absolutely sure?
+                              </DialogTitle>
                               <DialogDescription>
-                                This action cannot be undone. This will permanently delete
-                                the session <span className="font-semibold text-foreground">&quot;{session.name}&quot;</span> and all associated
-                                attendance records.
+                                This action cannot be undone. This will
+                                permanently delete the session{" "}
+                                <span className="font-semibold text-foreground">
+                                  &quot;{session.name}&quot;
+                                </span>{" "}
+                                and all associated attendance records.
                               </DialogDescription>
                             </DialogHeader>
                             <div className="flex flex-row items-center justify-end gap-3 pt-4">
@@ -294,10 +337,14 @@ const SessionsTable = () => {
                               </Button>
                               <Button
                                 variant="destructive"
-                                onClick={() => handleDelete(session._id, session.name)}
+                                onClick={() =>
+                                  handleDelete(session._id, session.name)
+                                }
                                 disabled={isDeleting === session._id}
                               >
-                                {isDeleting === session._id ? "Deleting..." : "Delete Session"}
+                                {isDeleting === session._id
+                                  ? "Deleting..."
+                                  : "Delete Session"}
                               </Button>
                             </div>
                           </DialogContent>
@@ -308,7 +355,10 @@ const SessionsTable = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={5}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No sessions found.
                   </TableCell>
                 </TableRow>

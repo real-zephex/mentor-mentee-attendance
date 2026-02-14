@@ -9,6 +9,7 @@
  */
 
 import type * as functions_attendance_actions from "../functions/attendance_actions.js";
+import type * as functions_attendance_queries from "../functions/attendance_queries.js";
 import type * as functions_classes_actions from "../functions/classes_actions.js";
 import type * as functions_classes_queries from "../functions/classes_queries.js";
 import type * as functions_helper from "../functions/helper.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "functions/attendance_actions": typeof functions_attendance_actions;
+  "functions/attendance_queries": typeof functions_attendance_queries;
   "functions/classes_actions": typeof functions_classes_actions;
   "functions/classes_queries": typeof functions_classes_queries;
   "functions/helper": typeof functions_helper;
