@@ -19,6 +19,7 @@ import type * as functions_students_actions from "../functions/students_actions.
 import type * as functions_students_queries from "../functions/students_queries.js";
 import type * as functions_users_actions from "../functions/users_actions.js";
 import type * as functions_users_queries from "../functions/users_queries.js";
+import type * as http from "../http.js";
 import type * as types_index from "../types/index.js";
 
 import type {
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   "functions/students_queries": typeof functions_students_queries;
   "functions/users_actions": typeof functions_users_actions;
   "functions/users_queries": typeof functions_users_queries;
+  http: typeof http;
   "types/index": typeof types_index;
 }>;
 

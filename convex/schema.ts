@@ -15,6 +15,10 @@ export default defineSchema({
   students: defineTable(Students)
     .index("by_roll", ["roll_no"])
     .index("by_class", ["class"]),
-  sessions: defineTable(Sessions).index("by_date", ["session_date"]),
-  attendance: defineTable(Attendance).index("by_student", ["student"]),
+  sessions: defineTable(Sessions)
+    .index("by_date", ["session_date"])
+    .index("by_class", ["class"]),
+  attendance: defineTable(Attendance)
+    .index("by_student", ["student"])
+    .index("by_session", ["session", "student"]),
 });

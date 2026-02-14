@@ -45,7 +45,6 @@ export const Attendance = v.object({
 export type Attendance = Infer<typeof Attendance>;
 
 // Function Return Types
-//
 type Success<T> = {
   status: "success";
   data: T;

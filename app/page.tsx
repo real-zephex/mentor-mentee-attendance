@@ -6,8 +6,9 @@ import SessionsTable from "@/components/custom/sessions/sessionsTable";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardOverview } from "@/components/custom/dashboardOverview";
-import { UserCircle, BookOpen, Calendar, Flag } from "lucide-react";
+import { UserCircle, BookOpen, Calendar, Flag, LayoutGrid } from "lucide-react";
 import AttendanceTable from "@/components/custom/attendance/attendanceTable";
+import AttendanceOverview from "@/components/custom/overview/AttendanceOverview";
 
 const Homepage = () => {
   return (
@@ -21,9 +22,18 @@ const Homepage = () => {
 
       <DashboardOverview />
 
-      <Tabs defaultValue="students" className="w-full space-y-6">
+      <Tabs defaultValue="overview" className="w-full space-y-6">
         <div className="flex items-center justify-between border-b pb-1 overflow-x-auto">
           <TabsList className="bg-transparent h-auto p-0 gap-6">
+            <TabsTrigger
+              value="overview"
+              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
+            >
+              <div className="flex items-center gap-2">
+                <LayoutGrid className="size-4" />
+                Analysis
+              </div>
+            </TabsTrigger>
             <TabsTrigger
               value="students"
               className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
@@ -63,6 +73,12 @@ const Homepage = () => {
           </TabsList>
         </div>
 
+        <TabsContent
+          value="overview"
+          className="mt-0 border-none p-0 outline-none"
+        >
+          <AttendanceOverview />
+        </TabsContent>
         <TabsContent
           value="students"
           className="mt-0 border-none p-0 outline-none"
