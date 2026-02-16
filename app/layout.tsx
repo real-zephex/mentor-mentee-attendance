@@ -40,7 +40,7 @@ export default function RootLayout({
             <AuthValidator>
               <ThemeProvider
                 attribute="class"
-                defaultTheme="system"
+                defaultTheme="dark"
                 enableSystem
                 disableTransitionOnChange
               >
