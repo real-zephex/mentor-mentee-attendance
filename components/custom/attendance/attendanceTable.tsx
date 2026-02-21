@@ -119,15 +119,18 @@ const AttendanceTable = () => {
   if (sessions === undefined || classes === undefined) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="border-none shadow-sm animate-pulse">
-            <CardHeader className="h-32 bg-muted/50 rounded-t-lg" />
-            <CardContent className="p-6 space-y-4">
-              <div className="h-4 w-3/4 bg-muted rounded" />
-              <div className="h-4 w-1/2 bg-muted rounded" />
-            </CardContent>
-          </Card>
-        ))}
+        {[1, 2, 3].map(() => {
+          const time = new Date().toString();
+          return (
+            <Card key={time} className="border-none shadow-sm animate-pulse">
+              <CardHeader className="h-32 bg-muted/50 rounded-t-lg" />
+              <CardContent className="p-6 space-y-4">
+                <div className="h-4 w-3/4 bg-muted rounded" />
+                <div className="h-4 w-1/2 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     );
   }

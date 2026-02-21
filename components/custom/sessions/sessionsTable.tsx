@@ -2,7 +2,7 @@
 
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 
 import {
@@ -61,6 +61,47 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+// type ReducerProps = {
+
+// }
+
+// function reducer(state, action) {}
+interface State {
+  sQ: string;
+  cM: Record<string, string>;
+  sB: string;
+  cF: string;
+}
+
+type Action =
+  | { type: "SEARCH_QUERY"; payload: string }
+  | { type: "CLASS_MAP"; payload: Record<string, string> }
+  | { type: "SORT_BY"; payload: string }
+  | { type: "CLASS_FILTER"; payload: string };
+
+const initialState: State = {
+  sQ: "",
+  cM: {},
+  sB: "newest",
+  cF: "all",
+};
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "SEARCH_QUERY":
+      return { ...state, sQ: action.payload };
+    case "CLASS_FILTER":
+      return { ...state, cF: action.payload };
+    case "CLASS_MAP":
+      return { ...state, cM: action.payload };
+    case "SORT_BY":
+      return { ...state, sB: action.payload };
+    default:
+      const exhaustiveCheck: never = action;
+      return exhaustiveCheck;
+  }
+};
+
 const SessionsTable = () => {
   const sessions = useQuery(api.functions.sessions_queries.GetAllSessions);
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
@@ -68,10 +109,7 @@ const SessionsTable = () => {
     api.functions.sessions_actions.deleteSession,
   );
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [classMap, setClassMap] = useState<Record<string, string>>({});
-  const [sortBy, setSortBy] = useState("newest");
-  const [classFilter, setClassFilter] = useState<string>("all");
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
@@ -86,7 +124,7 @@ const SessionsTable = () => {
         const class_name = i.class_name;
         tempMap[class_id] = class_name;
       }
-      setClassMap(tempMap);
+      dispatch({ type: "CLASS_MAP", payload: tempMap });
     }
 
     getMap();
@@ -99,33 +137,33 @@ const SessionsTable = () => {
     let newSessions = sessions.data;
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLocaleLowerCase();
+    if (state.sQ) {
+      const query = state.sQ.toLocaleLowerCase();
       newSessions = newSessions.filter((i) =>
         i.name.toLocaleLowerCase().includes(query),
       );
     }
 
     // Class filter
-    if (classFilter !== "all") {
-      newSessions = newSessions.filter((i) => i.class === classFilter);
+    if (state.cF !== "all") {
+      newSessions = newSessions.filter((i) => i.class === state.cF);
     }
 
     // Sorting
     newSessions.sort((a, b) => {
-      if (sortBy === "newest") return b._creationTime - a._creationTime;
-      if (sortBy === "oldest") return a._creationTime - b._creationTime;
-      if (sortBy === "date")
+      if (state.sB === "newest") return b._creationTime - a._creationTime;
+      if (state.sB === "oldest") return a._creationTime - b._creationTime;
+      if (state.sB === "date")
         return (
           new Date(a.session_date).getTime() -
           new Date(b.session_date).getTime()
         );
-      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (state.sB === "name") return a.name.localeCompare(b.name);
       return 0;
     });
 
     return newSessions;
-  }, [searchQuery, sessions, sortBy, classFilter]);
+  }, [sessions, state.cF, state.sB, state.sQ]);
 
   const handleDelete = async (sessionId: string, sessionName: string) => {
     setIsDeleting(sessionId);
@@ -174,7 +212,7 @@ const SessionsTable = () => {
             <DialogHeader>
               <DialogTitle>Create New Session</DialogTitle>
             </DialogHeader>
-            <SessionForm action="add" classes={classMap} />
+            <SessionForm action="add" classes={state.cM} />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -186,20 +224,27 @@ const SessionsTable = () => {
             <Input
               type="text"
               placeholder="Search sessions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={state.sQ}
+              onChange={(e) =>
+                dispatch({ type: "SEARCH_QUERY", payload: e.target.value })
+              }
               className="pl-10 bg-background/50 border-muted"
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Select defaultValue="all" onValueChange={(v) => setClassFilter(v)}>
+            <Select
+              defaultValue="all"
+              onValueChange={(v) =>
+                dispatch({ type: "CLASS_FILTER", payload: v })
+              }
+            >
               <SelectTrigger className="w-37.5 bg-background/50 border-muted">
                 <SelectValue placeholder="Class" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">All Classes</SelectItem>
-                  {Object.entries(classMap).map(([key, value]) => (
+                  {Object.entries(state.cM).map(([key, value]) => (
                     <SelectItem key={key} value={key}>
                       {value}
                     </SelectItem>
@@ -207,7 +252,10 @@ const SessionsTable = () => {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <Select defaultValue="newest" onValueChange={(v) => setSortBy(v)}>
+            <Select
+              defaultValue="newest"
+              onValueChange={(v) => dispatch({ type: "SORT_BY", payload: v })}
+            >
               <SelectTrigger className="w-37.5 bg-background/50 border-muted">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
@@ -268,7 +316,7 @@ const SessionsTable = () => {
                         variant="secondary"
                         className="font-normal bg-sky-500/10 text-sky-600 border-none"
                       >
-                        {classMap[String(session.class)] || "Unknown"}
+                        {state.cM[String(session.class)] || "Unknown"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -292,7 +340,7 @@ const SessionsTable = () => {
                             </DialogHeader>
                             <SessionForm
                               data={session}
-                              classes={classMap}
+                              classes={state.cM}
                               id={session._id}
                               action="patch"
                             />

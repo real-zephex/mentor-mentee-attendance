@@ -129,9 +129,10 @@ export function AttendanceMatrix({
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-xl" />
-          ))}
+          {[1, 2, 3, 4].map(() => {
+            const time = new Date().toString();
+            return <Skeleton key={time} className="h-32 w-full rounded-xl" />;
+          })}
         </div>
         <Skeleton className="h-96 w-full rounded-xl" />
       </div>
