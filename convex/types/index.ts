@@ -28,3 +28,11 @@ export const attendanceObject = v.object({
 });
 
 export type attendanceObjectType = Infer<typeof attendanceObject>;
+
+export const users = v.object({
+  email: v.string(),
+  password: v.string(),
+});
+
+export type UserType = Infer<typeof users>;
+

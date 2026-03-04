@@ -14,7 +14,7 @@ export default function DashboardPage() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="students">Add Students</TabsTrigger>
           <TabsTrigger value="sessions">New Session</TabsTrigger>
-          <TabsTrigger value="attendance">Mark Attendance</TabsTrigger>
+           <TabsTrigger value="attendance">Mark Attendance</TabsTrigger>
         </TabsList>
         <TabsContent value="students">
           <Card>
@@ -42,7 +42,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Daily Attendance</CardTitle>
-              <CardDescription>Mark attendance for students for today's sessions.</CardDescription>
+              <CardDescription>Mark attendance for students for today&apos;s sessions.</CardDescription>
             </CardHeader>
             <CardContent>
               <NewAttendanceForm />

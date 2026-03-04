@@ -17,8 +17,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Skeleton } from "@/components/ui/skeleton";
+import { AttendanceCell } from "@/components/custom/AttendanceCell";
+import { Id } from "@/convex/_generated/dataModel";
 
 type AttendanceMetric = {
   id: string;
@@ -57,14 +59,16 @@ export default function OverviewPage() {
 
   console.log(attendanceMetrics);
 
-  // Create a map for quick attendance lookup: session_id -> student_id -> status
-  const attendanceMap: Record<string, Record<string, string>> = {};
+  // Create a map for quick attendance lookup: session_id -> student_id -> record
+  const attendanceMap: Record<string, Record<string, (typeof attendance)[0]>> = {};
   attendance.forEach((record) => {
     if (!attendanceMap[record.class_session_id]) {
       attendanceMap[record.class_session_id] = {};
     }
-    attendanceMap[record.class_session_id][record.student_id] = record.status;
+    attendanceMap[record.class_session_id][record.student_id] = record;
   });
+
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <div className="container mx-auto py-10">
@@ -125,22 +129,21 @@ export default function OverviewPage() {
                           </div>
                         </TableCell>
                         {sessions.map((session) => {
-                          const status =
+                          const record =
                             attendanceMap[session._id]?.[student._id];
+                          const isFutureSession = session.session_date > today;
                           return (
                             <TableCell
                               key={session._id}
-                              className="text-center border-r"
+                              className="text-center border-r p-0"
                             >
-                              {status === "Present" ? (
-                                <Badge className="bg-green-500 hover:bg-green-600">
-                                  P
-                                </Badge>
-                              ) : status === "Absent" ? (
-                                <Badge variant="destructive">A</Badge>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
+                              <AttendanceCell
+                                attendanceId={record?._id as Id<"attendance">}
+                                studentId={student._id}
+                                classSessionId={session._id}
+                                initialStatus={record?.status}
+                                isFutureSession={isFutureSession}
+                              />
                             </TableCell>
                           );
                         })}

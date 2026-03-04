@@ -11,8 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,10 +25,19 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Id } from "@/convex/_generated/dataModel";
+import StudentEditDialog from "./StudentEditDialog";
 
 const StudentsList = () => {
   const data = useQuery(api.functions.queries.getStudents);
   const removeStudent = useMutation(api.functions.mutations.removeStudent);
+  const [editingStudent, setEditingStudent] = useState<{
+    _id: Id<"students">;
+    roll_number: string;
+    name: string;
+    email: string;
+    phone: string;
+    dob: string;
+  } | null>(null);
 
   const handleDeleteStudent = async (studentId: Id<"students">) => {
     try {
@@ -82,7 +92,16 @@ const StudentsList = () => {
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
                 <TableCell>{student.dob}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setEditingStudent(student)}
+                  >
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm" className="gap-2">
@@ -118,6 +137,11 @@ const StudentsList = () => {
       <div className="mt-4 text-sm text-gray-600">
         Total Students: <strong>{students.length}</strong>
       </div>
+      <StudentEditDialog
+        student={editingStudent}
+        isOpen={!!editingStudent}
+        onClose={() => setEditingStudent(null)}
+      />
     </div>
   );
 };
