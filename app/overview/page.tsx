@@ -143,6 +143,7 @@ export default function OverviewPage() {
                                 classSessionId={session._id}
                                 initialStatus={record?.status}
                                 isFutureSession={isFutureSession}
+                                isReadOnly={true}
                               />
                             </TableCell>
                           );

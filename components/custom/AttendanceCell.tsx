@@ -20,6 +20,7 @@ interface AttendanceCellProps {
   classSessionId: string;
   initialStatus?: string;
   isFutureSession: boolean;
+  isReadOnly?: boolean;
 }
 
 export function AttendanceCell({
@@ -28,6 +29,7 @@ export function AttendanceCell({
   classSessionId,
   initialStatus,
   isFutureSession,
+  isReadOnly = false,
 }: AttendanceCellProps) {
   const [status, setStatus] = useState<string | undefined>(initialStatus);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,6 +86,21 @@ export function AttendanceCell({
     return (
       <div className="flex justify-center">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Render read-only badge when isReadOnly is true
+  if (isReadOnly) {
+    return (
+      <div className="w-full h-full min-h-[40px] flex items-center justify-center">
+        {status === "Present" ? (
+          <Badge className="bg-green-500">P</Badge>
+        ) : status === "Absent" ? (
+          <Badge variant="destructive">A</Badge>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
       </div>
     );
   }
