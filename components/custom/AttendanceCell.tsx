@@ -93,7 +93,7 @@ export function AttendanceCell({
   // Render read-only badge when isReadOnly is true
   if (isReadOnly) {
     return (
-      <div className="w-full h-full min-h-[40px] flex items-center justify-center">
+      <div className="w-full h-full min-h-10 flex items-center justify-center">
         {status === "Present" ? (
           <Badge className="bg-green-500">P</Badge>
         ) : status === "Absent" ? (
@@ -107,7 +107,7 @@ export function AttendanceCell({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none w-full h-full min-h-[40px] flex items-center justify-center">
+      <DropdownMenuTrigger className="focus:outline-none w-full h-full min-h-10 flex items-center justify-center">
         {status === "Present" ? (
           <Badge className="bg-green-500 hover:bg-green-600 cursor-pointer">
             P

@@ -5,26 +5,29 @@ import { LayoutDashboard, TableProperties } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-4xl w-full space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
-            Mentor-Mentee System
-          </h1>
-          <p className="text-xl text-gray-600">
-            Streamlined student management and attendance tracking.
+    <div className="min-h-screen bg-muted/30 p-4 md:p-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+        <div className="rounded-2xl border bg-background px-6 py-10 text-center shadow-sm">
+          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">Mentor-Mentee Attendance</h1>
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+            Operational dashboard for session planning and attendance execution.
           </p>
+          <div className="mt-5">
+            <Link href="/login">
+              <Button size="lg">Sign in to continue</Button>
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="hover:shadow-lg transition-shadow">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Card className="transition-shadow hover:shadow-lg">
             <CardHeader className="text-center">
-              <div className="mx-auto bg-blue-100 p-3 rounded-full w-fit mb-4">
-                <LayoutDashboard className="h-8 w-8 text-blue-600" />
+              <div className="mx-auto mb-4 w-fit rounded-full bg-primary/10 p-3">
+                <LayoutDashboard className="h-8 w-8 text-primary" />
               </div>
               <CardTitle className="text-2xl">Management Dashboard</CardTitle>
               <CardDescription>
-                Add students, create sessions, and mark daily attendance.
+                Run attendance workflows, manage sessions, and update student records.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
@@ -34,14 +37,14 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow">
+          <Card className="transition-shadow hover:shadow-lg">
             <CardHeader className="text-center">
-              <div className="mx-auto bg-green-100 p-3 rounded-full w-fit mb-4">
-                <TableProperties className="h-8 w-8 text-green-600" />
+              <div className="mx-auto mb-4 w-fit rounded-full bg-primary/10 p-3">
+                <TableProperties className="h-8 w-8 text-primary" />
               </div>
               <CardTitle className="text-2xl">Attendance Overview</CardTitle>
               <CardDescription>
-                View consolidated attendance records for all students.
+                Review consolidated attendance and quickly find students at risk.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">

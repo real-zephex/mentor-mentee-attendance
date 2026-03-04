@@ -3,8 +3,8 @@ import { handle } from "hono/vercel";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { compare } from "bcryptjs";
-import { signToken } from "@/lib/jwt";
-import { setCookie } from "hono/cookie";
+import { signToken, verifyToken } from "@/lib/jwt";
+import { getCookie, setCookie } from "hono/cookie";
 
 const app = new Hono().basePath("/api");
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -40,6 +40,33 @@ app.post("/auth", async (c) => {
   });
 
   return c.json({ message: "Logged in successfully" }, 200);
+});
+
+app.post("/logout", async (c) => {
+  setCookie(c, "auth_token", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Lax",
+    maxAge: 0,
+    path: "/",
+  });
+
+  return c.json({ message: "Logged out successfully" }, 200);
+});
+
+app.get("/auth-status", async (c) => {
+  const token = getCookie(c, "auth_token");
+
+  if (!token) {
+    return c.json({ authenticated: false }, 200);
+  }
+
+  try {
+    await verifyToken(token);
+    return c.json({ authenticated: true }, 200);
+  } catch {
+    return c.json({ authenticated: false }, 200);
+  }
 });
 
 export const GET = handle(app);

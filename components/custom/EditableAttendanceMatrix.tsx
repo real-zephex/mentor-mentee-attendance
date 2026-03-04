@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttendanceCell } from "@/components/custom/AttendanceCell";
-import { Id } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 
 type AttendanceMetric = {
   id: string;
@@ -19,9 +19,9 @@ type AttendanceMetric = {
 };
 
 interface EditableAttendanceMatrixProps {
-  students: any[];
-  sessions: any[];
-  attendance: any[];
+  students: Doc<"students">[];
+  sessions: Doc<"sessions">[];
+  attendance: Doc<"attendance">[];
   isLoading?: boolean;
 }
 
