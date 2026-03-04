@@ -50,6 +50,8 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
+        // Wait for auth_token cookie to be fully set in the browser
+        await new Promise(resolve => setTimeout(resolve, 150));
         router.push("/dashboard");
       } else {
         const data = await response.json();
