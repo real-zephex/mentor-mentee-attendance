@@ -42,9 +42,16 @@ import {
 } from "@/components/ui/select";
 import { to12Hour } from "../sessions/sessionsTable";
 import AttendanceForm from "./attendanceForm";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 const AttendanceTable = () => {
-  const sessions = useQuery(api.functions.sessions_queries.GetAllSessions);
+  const { isTeacher, user } = useAuthCheck();
+
+  const sessions = isTeacher
+    ? useQuery(api.functions.sessions_queries.GetTeacherSessions, {
+        teacherId: user!._id,
+      })
+    : useQuery(api.functions.sessions_queries.GetAllSessions);
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,11 +69,14 @@ const AttendanceTable = () => {
   }, [classes]);
 
   const filteredSessions = useMemo(() => {
-    if (!sessions || sessions.status === "error") return [];
+    if (!sessions || sessions === undefined) return [];
+    const newSessions = sessions.status === "success" ? sessions.data : [];
+
+    if (newSessions === undefined) return [];
 
     const today = new Date().toISOString().split("T")[0];
 
-    const result = sessions.data.filter((session) => {
+    const result = newSessions.filter((session) => {
       const matchesSearch = session.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
@@ -122,7 +132,10 @@ const AttendanceTable = () => {
         {[1, 2, 3].map(() => {
           const time = new Date().toString();
           return (
-            <Card key={time} className="border-none shadow-sm animate-pulse">
+            <Card
+              key={time + Math.random()}
+              className="border-none shadow-sm animate-pulse"
+            >
               <CardHeader className="h-32 bg-muted/50 rounded-t-lg" />
               <CardContent className="p-6 space-y-4">
                 <div className="h-4 w-3/4 bg-muted rounded" />
@@ -276,14 +289,6 @@ const AttendanceTable = () => {
                           mark their presence.
                         </DialogDescription>
                       </DialogHeader>
-                      {/*<div className="py-6 flex flex-col items-center justify-center text-center space-y-4 border-2 border-dashed rounded-lg bg-muted/30">
-                        <div className="animate-bounce">
-                          <LayoutGrid className="size-8 text-muted-foreground" />
-                        </div>
-                        <p className="text-sm font-medium">
-                          Student list interface currently under development
-                        </p>
-                      </div>*/}
                       <AttendanceForm
                         sessionId={session._id}
                         classId={session.class}

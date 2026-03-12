@@ -9,8 +9,10 @@ export const useAuthCheck = () => {
   const currentUser = useQuery(api.functions.helper.getCurrentUser);
 
   const isConfirmed = currentUser?.status === "active";
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin =
+    currentUser?.role === "admin" || currentUser?.role === "teacher";
   const isViewer = isConfirmed && !isAdmin;
+  const isTeacher = currentUser?.role === "teacher";
 
   return {
     isLoading: !isLoaded || currentUser === undefined,
@@ -19,5 +21,6 @@ export const useAuthCheck = () => {
     isAdmin,
     isViewer,
     user: currentUser,
+    isTeacher,
   };
 };

@@ -35,7 +35,8 @@ export const Sessions = v.object({
   end_time: v.string(),
   remarks: v.string(),
   name: v.string(),
-  subject: v.optional(v.id("subjects")),
+  subject: v.id("subjects"),
+  created_by: v.id("users"),
 });
 
 export const Attendance = v.object({

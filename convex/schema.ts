@@ -18,7 +18,8 @@ export default defineSchema({
     .index("by_class", ["class"]),
   sessions: defineTable(Sessions)
     .index("by_date", ["session_date"])
-    .index("by_class", ["class"]),
+    .index("by_class", ["class"])
+    .index("by_teacher", ["created_by"]),
   attendance: defineTable(Attendance)
     .index("by_student", ["student"])
     .index("by_session", ["session", "student"]),

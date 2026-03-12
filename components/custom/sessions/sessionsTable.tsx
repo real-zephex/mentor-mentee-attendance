@@ -60,6 +60,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getCurrentUser } from "@/convex/functions/users_queries";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 // type ReducerProps = {
 
@@ -103,7 +105,9 @@ const reducer = (state: State, action: Action): State => {
 };
 
 const SessionsTable = () => {
-  const sessions = useQuery(api.functions.sessions_queries.GetAllSessions);
+  const { isTeacher, user } = useAuthCheck();
+
+  const sessions = isTeacher ? useQuery(api.functions.sessions_queries.GetTeacherSessions, {teacherId: user!._id}) : useQuery(api.functions.sessions_queries.GetAllSessions);
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
   const deleteSession = useMutation(
     api.functions.sessions_actions.deleteSession,
@@ -132,10 +136,10 @@ const SessionsTable = () => {
 
   // Sorting and filtering logic
   const sessionsRecords = useMemo(() => {
-    if (!sessions || sessions.status === "error") return;
-
-    let newSessions = sessions.data;
-
+    if (!sessions || sessions === undefined) return [];
+    let newSessions = sessions.status === "success" ? sessions.data : [];
+    
+    if (newSessions === undefined) return [];
     // Search filter
     if (state.sQ) {
       const query = state.sQ.toLocaleLowerCase();

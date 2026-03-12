@@ -18,6 +18,7 @@ export const createUser = mutation({
   },
 });
 
+// do not touch this function - used for webhook
 export const deleteUser = mutation({
   args: { clerkId: v.string() },
   handler: async (ctx, args) => {
@@ -32,6 +33,7 @@ export const deleteUser = mutation({
   },
 });
 
+// do not touch this function - used for webhook
 export const patchUser = mutation({
   args: {
     clerk_user_id: v.string(),
@@ -87,7 +89,11 @@ export const updateUserAccess = mutation({
   handler: async (ctx, args) => {
     await requireAdminAuth(ctx);
 
-    if (args.role === "student" && args.status === "active" && !args.studentId) {
+    if (
+      args.role === "student" &&
+      args.status === "active" &&
+      !args.studentId
+    ) {
       throw new ConvexError("Student role requires a linked student record");
     }
 

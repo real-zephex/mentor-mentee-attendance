@@ -34,8 +34,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 const ManageClasses = () => {
+  const { isTeacher } = useAuthCheck();
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
   const deleteClassess = useMutation(api.functions.classes_actions.deleteClass);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -75,20 +77,22 @@ const ManageClasses = () => {
           </CardDescription>
         </div>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
-              <PlusIcon className="mr-2 size-4" />
-              Add Class
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Adding New Class</DialogTitle>
-            </DialogHeader>
-            <ClassForm action="add" />
-          </DialogContent>
-        </Dialog>
+        {!isTeacher && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
+                <PlusIcon className="mr-2 size-4" />
+                Add Class
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adding New Class</DialogTitle>
+              </DialogHeader>
+              <ClassForm action="add" />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardHeader>
 
       <CardContent>
@@ -130,66 +134,72 @@ const ManageClasses = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end items-center gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 hover:text-sky-500"
-                            >
-                              <Edit2Icon size={14} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Editing {i.class_name}</DialogTitle>
-                              <DialogDescription>
-                                Update class information and room assignments
-                              </DialogDescription>
-                            </DialogHeader>
-                            <ClassForm action="patch" data={i} id={i._id} />
-                          </DialogContent>
-                        </Dialog>
-
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <Trash size={14} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Deleting {i.class_name}</DialogTitle>
-                              <DialogDescription>
-                                Are you sure? This action cannot be undone and
-                                will affect associated student records.
-                              </DialogDescription>
-                            </DialogHeader>
-
-                            <div className="flex flex-row items-center justify-end gap-3 pt-4">
-                              <DialogClose asChild>
-                                <Button variant="ghost">Cancel</Button>
-                              </DialogClose>
+                      {!isTeacher && (
+                        <div className="flex justify-end items-center gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
                               <Button
-                                variant="destructive"
-                                onClick={() =>
-                                  handleDelete(i._id, i.class_name)
-                                }
-                                disabled={isDeleting === i._id}
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 hover:text-sky-500"
                               >
-                                {isDeleting === i._id
-                                  ? "Deleting..."
-                                  : "Delete Class"}
+                                <Edit2Icon size={14} />
                               </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Editing {i.class_name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Update class information and room assignments
+                                </DialogDescription>
+                              </DialogHeader>
+                              <ClassForm action="patch" data={i} id={i._id} />
+                            </DialogContent>
+                          </Dialog>
+
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Deleting {i.class_name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Are you sure? This action cannot be undone and
+                                  will affect associated student records.
+                                </DialogDescription>
+                              </DialogHeader>
+
+                              <div className="flex flex-row items-center justify-end gap-3 pt-4">
+                                <DialogClose asChild>
+                                  <Button variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() =>
+                                    handleDelete(i._id, i.class_name)
+                                  }
+                                  disabled={isDeleting === i._id}
+                                >
+                                  {isDeleting === i._id
+                                    ? "Deleting..."
+                                    : "Delete Class"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

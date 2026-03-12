@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 const SessionEntryObject = z.object({
@@ -38,11 +38,15 @@ const SessionEntryObject = z.object({
   start_time: z.string({ error: "Start time is required" }),
   end_time: z.string({ error: "End time is required" }),
   remarks: z.string().optional(),
+  subject: z.string({ error: "Subject is required." }),
+  created_by: z.string({ error: "Creator information is required." }),
 });
 
 type SessionEntryType = z.infer<typeof SessionEntryObject>;
 
 import { toast } from "sonner";
+import { Doc } from "@/convex/_generated/dataModel";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 const SessionForm = ({
   data,
@@ -50,16 +54,20 @@ const SessionForm = ({
   id,
   action,
 }: {
-  data?: SessionEntryType & { _id?: Id<"sessions"> };
+  data?: Doc<"sessions">;
   classes: Record<string, string>;
   id?: Id<"sessions">;
   action: "patch" | "add";
 }) => {
+  const { user } = useAuthCheck();
+
   const patchSession = useMutation(
     api.functions.sessions_actions.patchSessions,
   );
   const newSession = useMutation(api.functions.sessions_actions.newSession);
-
+  const subject = useQuery(api.functions.subjects_queries.GetTeacherSubjects, {
+    teacherId: user!._id, // MARK: all subjects
+  });
   const form = useForm<SessionEntryType>({
     resolver: zodResolver(SessionEntryObject),
     defaultValues: {
@@ -69,10 +77,10 @@ const SessionForm = ({
       start_time: data?.start_time || "",
       end_time: data?.end_time || "",
       remarks: data?.remarks || "",
+      subject: data?.subject || "",
+      created_by: data?.created_by || "",
     },
   });
-
-  const classValue = form.watch("class");
 
   async function onSubmit(values: SessionEntryType) {
     try {
@@ -83,6 +91,8 @@ const SessionForm = ({
         start_time: values.start_time,
         end_time: values.end_time,
         remarks: values.remarks || "",
+        subject: values.subject as Id<"subjects">,
+        created_by: user!._id,
       };
 
       if (action === "patch") {
@@ -137,47 +147,81 @@ const SessionForm = ({
           )}
         />
 
-        <FormField
-          name="class"
-          control={form.control}
-          render={() => (
-            <FormItem>
-              <FormLabel className="text-sm font-semibold">Class</FormLabel>
-              <FormControl>
-                <Select
-                  onValueChange={(e) => form.setValue("class", e)}
-                  value={classValue}
-                >
-                  <SelectTrigger
-                    className={cn(
-                      "bg-background/70 border-border/70",
-                      "focus:ring-primary/40",
-                    )}
-                  >
-                    <SelectValue
-                      placeholder={
-                        classValue ? classes[classValue] : "Select a class"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {Object.entries(classes).map(([key, value], idx) => (
-                        <SelectItem key={idx} value={key}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormDescription className="text-xs text-muted-foreground">
-                Class for this session
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex flex-row items-center gap-4">
+          <FormField
+            name="class"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Class</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={cn(
+                        "bg-background/70 border-border/70",
+                        "focus:ring-primary/40",
+                      )}
+                    >
+                      <SelectValue
+                        placeholder={
+                          field.value ? classes[field.value] : "Select a class"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {Object.entries(classes).map(([key, value], idx) => (
+                          <SelectItem key={idx} value={key}>
+                            {value}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription className="text-xs text-muted-foreground">
+                  Class for this session
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="subject"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Subject</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger
+                      className={cn(
+                        "bg-background/70 border-border/70",
+                        "focus:ring-primary/40",
+                      )}
+                    >
+                      <SelectValue placeholder="Select a subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {subject?.status === "success" &&
+                          subject?.data.map((sub, idx) => (
+                            <SelectItem key={idx} value={sub._id}>
+                              {sub.subject_name}
+                            </SelectItem>
+                          ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormDescription className="text-xs text-muted-foreground">
+                  Subject for this session
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           name="session_date"

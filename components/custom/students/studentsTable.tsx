@@ -45,8 +45,10 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Id } from "@/convex/_generated/dataModel";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 const StudentTable = () => {
+  const { isTeacher } = useAuthCheck();
   const students = useQuery(api.functions.students_queries.getAllStudents);
   const deleteStudent = useMutation(
     api.functions.students_actions.deleteStudent,
@@ -131,7 +133,6 @@ const StudentTable = () => {
     return (
       <Card className="border-none shadow-sm">
         <CardContent className="p-12 flex flex-col items-center justify-center text-center">
-
           <div className="size-12 rounded-full bg-muted animate-pulse mb-4" />
           <div className="h-4 w-48 bg-muted animate-pulse rounded mb-2" />
           <div className="h-3 w-32 bg-muted animate-pulse rounded" />
@@ -150,23 +151,25 @@ const StudentTable = () => {
           </CardDescription>
         </div>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
-              <PlusIcon className="mr-2 size-4" />
-              Add Student
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex flex-row items-center gap-2">
-                <UserCircle className="text-muted-foreground" />
-                <p>New Student</p>
-              </DialogTitle>
-            </DialogHeader>
-            <StudentForm action="add" classes={classMap} />
-          </DialogContent>
-        </Dialog>
+        {!isTeacher && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
+                <PlusIcon className="mr-2 size-4" />
+                Add Student
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex flex-row items-center gap-2">
+                  <UserCircle className="text-muted-foreground" />
+                  <p>New Student</p>
+                </DialogTitle>
+              </DialogHeader>
+              <StudentForm action="add" classes={classMap} />
+            </DialogContent>
+          </Dialog>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-6">
@@ -220,9 +223,11 @@ const StudentTable = () => {
                 <TableHead className="w-25 font-semibold">Roll No</TableHead>
                 <TableHead className="font-semibold">Name</TableHead>
                 <TableHead className="font-semibold">Class</TableHead>
-                <TableHead className="font-semibold text-right">
-                  Actions
-                </TableHead>
+                {!isTeacher && (
+                  <TableHead className="font-semibold text-right">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,78 +249,80 @@ const StudentTable = () => {
                         {classMap[String(i.class)] || "No Class"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end items-center gap-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 hover:text-sky-500"
-                            >
-                              <Edit2Icon size={14} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>
-                                Editing {i.roll_no} - {i.name}
-                              </DialogTitle>
-                              <DialogDescription>
-                                Edit Student Information
-                              </DialogDescription>
-                            </DialogHeader>
-                            <StudentForm
-                              data={i}
-                              classes={classMap}
-                              id={i._id}
-                              action="patch"
-                            />
-                          </DialogContent>
-                        </Dialog>
-
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <Trash size={14} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>
-                                Are you absolutely sure?
-                              </DialogTitle>
-                              <DialogDescription>
-                                This action cannot be undone. This will remove
-                                entry of{" "}
-                                <span className="font-semibold text-foreground">
-                                  {i.name}
-                                </span>{" "}
-                                from the database.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex flex-row items-center justify-end gap-3 pt-4">
-                              <DialogClose asChild>
-                                <Button variant="ghost">Cancel</Button>
-                              </DialogClose>
+                    {!isTeacher && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end items-center gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
                               <Button
-                                variant="destructive"
-                                onClick={() => handleDelete(i._id, i.name)}
-                                disabled={isDeleting === i._id}
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 hover:text-sky-500"
                               >
-                                {isDeleting === i._id
-                                  ? "Deleting..."
-                                  : "Delete Student"}
+                                <Edit2Icon size={14} />
                               </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </TableCell>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Editing {i.roll_no} - {i.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Edit Student Information
+                                </DialogDescription>
+                              </DialogHeader>
+                              <StudentForm
+                                data={i}
+                                classes={classMap}
+                                id={i._id}
+                                action="patch"
+                              />
+                            </DialogContent>
+                          </Dialog>
+
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash size={14} />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Are you absolutely sure?
+                                </DialogTitle>
+                                <DialogDescription>
+                                  This action cannot be undone. This will remove
+                                  entry of{" "}
+                                  <span className="font-semibold text-foreground">
+                                    {i.name}
+                                  </span>{" "}
+                                  from the database.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="flex flex-row items-center justify-end gap-3 pt-4">
+                                <DialogClose asChild>
+                                  <Button variant="ghost">Cancel</Button>
+                                </DialogClose>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => handleDelete(i._id, i.name)}
+                                  disabled={isDeleting === i._id}
+                                >
+                                  {isDeleting === i._id
+                                    ? "Deleting..."
+                                    : "Delete Student"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : (

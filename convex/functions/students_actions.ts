@@ -1,13 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { Students } from "../types";
-import { requireAuth } from "./helper";
+import { requireAdminAuth, requireAuth } from "./helper";
 
 export const newStudents = mutation({
   args: Students,
   handler: async (ctx, args) => {
     try {
-      await requireAuth(ctx);
+      await requireAdminAuth(ctx);
       const existing = await ctx.db
         .query("students")
         .withIndex("by_roll", (q) => q.eq("roll_no", args.roll_no))
@@ -33,7 +33,7 @@ export const newStudents = mutation({
 export const deleteStudent = mutation({
   args: { student_id: v.id("students") },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    await requireAdminAuth(ctx);
 
     // Delete associated attendance records first to prevent orphaned data
     const attendanceRecords = await ctx.db
@@ -56,7 +56,7 @@ export const patchStudents = mutation({
     data: Students,
   },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    await requireAdminAuth(ctx);
     await ctx.db.patch("students", args.id, args.data);
   },
 });

@@ -14,17 +14,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, SortAsc, SortDesc, RotateCcw } from "lucide-react";
 
 export type SortType = "name" | "roll" | "attendance%";
 
+type SubjectOption = {
+  id: Id<"subjects">;
+  label: string;
+};
+
 interface AttendanceMatrixControlsProps {
   sortBy: SortType;
   setSortBy: (val: SortType) => void;
   sortOrder: "asc" | "desc";
   setSortOrder: (val: "asc" | "desc") => void;
+  subjectFilter: "all" | Id<"subjects">;
+  setSubjectFilter: (val: "all" | Id<"subjects">) => void;
+  subjectOptions: SubjectOption[];
   dateRange: { from?: Date; to?: Date };
   setDateRange: (range: { from?: Date; to?: Date }) => void;
   onReset: () => void;
@@ -35,6 +44,9 @@ export function AttendanceMatrixControls({
   setSortBy,
   sortOrder,
   setSortOrder,
+  subjectFilter,
+  setSubjectFilter,
+  subjectOptions,
   dateRange,
   setDateRange,
   onReset,
@@ -72,6 +84,30 @@ export function AttendanceMatrixControls({
             )}
           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Subject
+        </label>
+        <Select
+          value={subjectFilter}
+          onValueChange={(val) =>
+            setSubjectFilter(val as "all" | Id<"subjects">)
+          }
+        >
+          <SelectTrigger className="w-48 h-9 bg-background">
+            <SelectValue placeholder="All subjects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Subjects</SelectItem>
+            {subjectOptions.map((subject) => (
+              <SelectItem key={subject.id} value={subject.id}>
+                {subject.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex flex-col gap-1.5">

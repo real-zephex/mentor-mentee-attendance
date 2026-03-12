@@ -1,5 +1,5 @@
-import { query, QueryCtx } from "../_generated/server";
-import { Doc, Id } from "../_generated/dataModel";
+import { query } from "../_generated/server";
+import { Doc } from "../_generated/dataModel";
 import { ReturnProps } from "../types";
 import { ConvexError, v } from "convex/values";
 import { requireAuth } from "./helper";
@@ -7,6 +7,7 @@ import { requireAuth } from "./helper";
 export type ReturnType = Doc<"attendance">;
 export type StudentsData = Doc<"students">;
 export type SessionsData = Doc<"sessions">;
+export type SubjectsData = Doc<"subjects">;
 
 export const GetAttendanceBySession = query({
   args: { session: v.id("sessions") },
@@ -35,6 +36,7 @@ export const GetAttendanceBySession = query({
 type AttendanceMatrix = {
   students: StudentsData[];
   sessions: SessionsData[];
+  subjects: SubjectsData[];
   attendance_matrix: AttendanceMap;
 };
 
@@ -59,6 +61,16 @@ export const GetAttendanceMatrix = query({
           "Length of sessions or students cannot be 0. Please verfiy the query and check status in database",
         );
 
+      const subjectIds = Array.from(
+        new Set(sessions.map((session) => session.subject)),
+      );
+      const subjectDocs = await Promise.all(
+        subjectIds.map((subjectId) => ctx.db.get(subjectId)),
+      );
+      const subjects = subjectDocs.filter(
+        (subject): subject is SubjectsData => subject !== null,
+      );
+
       //  fetch attendance for sessions in this class
       const sessionIds = sessions.map((s) => s._id);
       const attendancePromises = sessionIds.map((sessionId) =>
@@ -81,6 +93,7 @@ export const GetAttendanceMatrix = query({
         data: {
           students,
           sessions,
+          subjects,
           attendance_matrix: attendanceMap,
         },
       };
