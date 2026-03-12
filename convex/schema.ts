@@ -4,6 +4,7 @@ import {
   ClassesTable,
   Sessions,
   Students,
+  Subjects,
   UserObject,
 } from "./types";
 
@@ -21,4 +22,7 @@ export default defineSchema({
   attendance: defineTable(Attendance)
     .index("by_student", ["student"])
     .index("by_session", ["session", "student"]),
+  subjects: defineTable(Subjects)
+    .index("by_teacher", ["teacher"])
+    .index("by_code", ["subject_code"]),
 });

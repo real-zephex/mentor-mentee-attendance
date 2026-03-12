@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { UserObject } from "../types";
+import { requireAdminAuth } from "./helper";
 // import { requireAuth } from "./helper";
 
 // this function is always called from webhook. No further imports or whatsoever
@@ -52,5 +53,48 @@ export const patchUser = mutation({
     }
 
     await ctx.db.patch("users", user._id, args.data);
+  },
+});
+
+export const patchStudent = mutation({
+  args: {
+    userID: v.id("users"),
+    studentId: v.id("students"),
+  },
+  handler: async (ctx, args) => {
+    await requireAdminAuth(ctx);
+
+    await ctx.db.patch("users", args.userID, {
+      role: "student",
+      status: "active",
+      student: args.studentId,
+    });
+  },
+});
+
+export const updateUserAccess = mutation({
+  args: {
+    userId: v.id("users"),
+    role: v.union(
+      v.literal("user"),
+      v.literal("admin"),
+      v.literal("student"),
+      v.literal("teacher"),
+    ),
+    status: v.union(v.literal("active"), v.literal("pending")),
+    studentId: v.optional(v.id("students")),
+  },
+  handler: async (ctx, args) => {
+    await requireAdminAuth(ctx);
+
+    if (args.role === "student" && args.status === "active" && !args.studentId) {
+      throw new ConvexError("Student role requires a linked student record");
+    }
+
+    await ctx.db.patch("users", args.userId, {
+      role: args.role,
+      status: args.status,
+      student: args.role === "student" ? args.studentId : undefined,
+    });
   },
 });

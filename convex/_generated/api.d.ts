@@ -17,6 +17,8 @@ import type * as functions_sessions_actions from "../functions/sessions_actions.
 import type * as functions_sessions_queries from "../functions/sessions_queries.js";
 import type * as functions_students_actions from "../functions/students_actions.js";
 import type * as functions_students_queries from "../functions/students_queries.js";
+import type * as functions_subjects_actions from "../functions/subjects_actions.js";
+import type * as functions_subjects_queries from "../functions/subjects_queries.js";
 import type * as functions_users_actions from "../functions/users_actions.js";
 import type * as functions_users_queries from "../functions/users_queries.js";
 import type * as http from "../http.js";
@@ -38,6 +40,8 @@ declare const fullApi: ApiFromModules<{
   "functions/sessions_queries": typeof functions_sessions_queries;
   "functions/students_actions": typeof functions_students_actions;
   "functions/students_queries": typeof functions_students_queries;
+  "functions/subjects_actions": typeof functions_subjects_actions;
+  "functions/subjects_queries": typeof functions_subjects_queries;
   "functions/users_actions": typeof functions_users_actions;
   "functions/users_queries": typeof functions_users_queries;
   http: typeof http;

@@ -1,8 +1,11 @@
 "use client";
 
-import { useAuthCheck } from "@/hooks/useAuthCheck";
+import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
+
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 import { ModeToggle } from "../theme-toggle";
 
@@ -19,6 +22,11 @@ const Navbar = () => {
           <h2 className="font-bold text-xl tracking-tight hidden sm:block">Attendance Tracker</h2>
         </div>
         <div className="flex flex-row items-center justify-center gap-3">
+          {user?.role === "admin" && (
+            <Button asChild variant="ghost" className="hidden sm:inline-flex">
+              <Link href="/admin/dashboard">Admin Dashboard</Link>
+            </Button>
+          )}
           {user && (
             <Badge
               variant="secondary"

@@ -41,3 +41,28 @@ export const getAllUsers = query({
     }
   },
 });
+
+export const getActiveTeachers = query({
+  handler: async (ctx): Promise<ReturnProps<UserType[]>> => {
+    try {
+      await requireAdminAuth(ctx);
+
+      const teachers = await ctx.db
+        .query("users")
+        .filter((q) => q.eq(q.field("role"), "teacher"))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect();
+
+      return {
+        status: "success",
+        data: teachers,
+      };
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+      return {
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  },
+});
