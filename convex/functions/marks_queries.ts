@@ -59,7 +59,18 @@ export const GetMarksByFilters = query({
   },
   handler: async (ctx, args): Promise<ReturnProps<MarksType[]>> => {
     try {
-      await requireAuth(ctx);
+      const caller = await requireAuth(ctx);
+
+      // If the caller is a teacher, scope all results to their subjects only
+      let teacherSubjectIds: Set<string> | null = null;
+      if (caller.role === "teacher") {
+        const teacherSubjects = await ctx.db
+          .query("subjects")
+          .withIndex("by_teacher", (q) => q.eq("teacher", caller._id))
+          .collect();
+        teacherSubjectIds = new Set(teacherSubjects.map((s) => s._id));
+      }
+
       let marks: MarksType[] = [];
 
       if (args.class_id) {
@@ -98,6 +109,11 @@ export const GetMarksByFilters = query({
         if (args.semester_id && (args.subject_id || args.exam_id)) {
           marks = marks.filter((m) => m.semester === args.semester_id);
         }
+      }
+
+      // Enforce teacher subject scope
+      if (teacherSubjectIds) {
+        marks = marks.filter((m) => teacherSubjectIds!.has(m.subject));
       }
 
       return {

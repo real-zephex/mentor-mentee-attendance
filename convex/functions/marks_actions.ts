@@ -7,7 +7,23 @@ export const BatchMarksInsert = mutation({
   args: { data: v.array(Marks) },
   handler: async (ctx, args) => {
     try {
-      await requireAuth(ctx);
+      const caller = await requireAuth(ctx);
+
+      // If the caller is a teacher, ensure all subjects belong to them
+      if (caller.role === "teacher") {
+        const teacherSubjects = await ctx.db
+          .query("subjects")
+          .withIndex("by_teacher", (q) => q.eq("teacher", caller._id))
+          .collect();
+        const teacherSubjectIds = new Set(teacherSubjects.map((s) => s._id));
+
+        for (const item of args.data) {
+          if (!teacherSubjectIds.has(item.subject)) {
+            throw new ConvexError("Unauthorized: You can only add marks for your own subjects");
+          }
+        }
+      }
+
       const ids: string[] = [];
       for (const item of args.data) {
         const existing = await ctx.db
@@ -39,10 +55,29 @@ export const patchMarks = mutation({
   args: { marks_id: v.id("marks"), marks: v.number() },
   handler: async (ctx, args) => {
     try {
-      await requireAuth(ctx);
-      await ctx.db.patch("marks", args.marks_id, {marks: args.marks});
+      const caller = await requireAuth(ctx);
+
+      const existing = await ctx.db.get(args.marks_id);
+      if (!existing) throw new ConvexError("Mark record not found");
+
+      // If the caller is a teacher, ensure the mark belongs to one of their subjects
+      if (caller.role === "teacher") {
+        const subject = await ctx.db
+          .query("subjects")
+          .withIndex("by_teacher", (q) => q.eq("teacher", caller._id))
+          .filter((q) => q.eq(q.field("_id"), existing.subject))
+          .first();
+
+        if (!subject) {
+          throw new ConvexError("Unauthorized: You can only edit marks for your own subjects");
+        }
+      }
+
+      await ctx.db.patch(args.marks_id, { marks: args.marks });
     } catch (error) {
-      throw new Error((error as Error).message);
+      throw new Error(
+        error instanceof ConvexError ? error.message : (error as Error).message,
+      );
     }
   },
 });
