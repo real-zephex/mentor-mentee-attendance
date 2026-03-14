@@ -2,9 +2,8 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { UserObject } from "../types";
 import { requireAdminAuth } from "./helper";
-// import { requireAuth } from "./helper";
 
-// this function is always called from webhook. No further imports or whatsoever
+// this function is always called from webhook. No further imports or whatsoever || DO NOT MODIFY
 export const createUser = mutation({
   args: UserObject,
   handler: async (ctx, args) => {

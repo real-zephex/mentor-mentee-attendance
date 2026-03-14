@@ -46,12 +46,14 @@ import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 const AttendanceTable = () => {
   const { isTeacher, user } = useAuthCheck();
-
-  const sessions = isTeacher
-    ? useQuery(api.functions.sessions_queries.GetTeacherSessions, {
-        teacherId: user!._id,
-      })
-    : useQuery(api.functions.sessions_queries.GetAllSessions);
+  const teacherSessions = useQuery(
+    api.functions.sessions_queries.GetTeacherSessions,
+    {
+      teacherId: user!._id ?? "skip",
+    },
+  );
+  const allSessions = useQuery(api.functions.sessions_queries.GetAllSessions);
+  const sessions = isTeacher ? teacherSessions : allSessions;
   const classes = useQuery(api.functions.classes_queries.GetAllClasses);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -129,13 +131,9 @@ const AttendanceTable = () => {
   if (sessions === undefined || classes === undefined) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3].map(() => {
-          const time = new Date().toString();
+        {[1, 2, 3].map((idx) => {
           return (
-            <Card
-              key={time + Math.random()}
-              className="border-none shadow-sm animate-pulse"
-            >
+            <Card key={idx} className="border-none shadow-sm animate-pulse">
               <CardHeader className="h-32 bg-muted/50 rounded-t-lg" />
               <CardContent className="p-6 space-y-4">
                 <div className="h-4 w-3/4 bg-muted rounded" />

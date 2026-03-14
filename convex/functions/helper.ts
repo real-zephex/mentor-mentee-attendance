@@ -16,7 +16,10 @@ async function getCaller(ctx: MutationCtx | QueryCtx) {
 
   if (!result) return null;
 
-  if (result.status == "active") {
+  if (
+    result.status == "active" &&
+    (result.role === "admin" || result.role === "teacher")
+  ) {
     return result;
   } else {
     return null;

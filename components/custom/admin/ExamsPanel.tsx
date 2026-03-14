@@ -3,19 +3,19 @@
 import { useMemo, useState } from "react";
 
 import { useMutation, useQuery } from "convex/react";
-import { PlusIcon, Trash, Edit2Icon } from "lucide-react";
+import { Edit2Icon, PlusIcon, Trash } from "lucide-react";
 import { toast } from "sonner";
 
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -25,15 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -42,60 +34,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-type TeacherMap = Record<string, { name: string; email: string }>;
-
-type SubjectFormState = {
+type ExamFormState = {
   name: string;
-  code: string;
-  teacherId: Id<"users"> | null;
   semesterId: Id<"semesters"> | null;
+  max_marks: number | null;
 };
 
-type SubjectEditState = SubjectFormState & { id: Id<"subjects"> };
+type ExamEditState = ExamFormState & { id: Id<"exams"> };
 
-export function SubjectsPanel() {
-  const subjectsResponse = useQuery(api.functions.subjects_queries.GetAllSubjects);
-  const teachersResponse = useQuery(api.functions.users_queries.getActiveTeachers);
-  const semestersResponse = useQuery(api.functions.semesters_queries.getAllSemesters);
-  const newSubject = useMutation(api.functions.subjects_actions.newSubject);
-  const patchSubject = useMutation(api.functions.subjects_actions.patchSubject);
-  const deleteSubject = useMutation(api.functions.subjects_actions.deleteSubject);
+export function ExamsPanel() {
+  const examsResponse = useQuery(api.functions.exams_queries.GetAllExams);
+  const semestersResponse = useQuery(
+    api.functions.semesters_queries.getAllSemesters,
+  );
+  const addExam = useMutation(api.functions.exams_actions.AddNewExam);
+  const patchExam = useMutation(api.functions.exams_actions.patchExam);
+  const deleteExam = useMutation(api.functions.exams_actions.deleteExam);
 
-  const [formState, setFormState] = useState<SubjectFormState>({
+  const [formState, setFormState] = useState<ExamFormState>({
     name: "",
-    code: "",
-    teacherId: null,
     semesterId: null,
+    max_marks: null,
   });
+  const [editState, setEditState] = useState<ExamEditState | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editState, setEditState] = useState<SubjectEditState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-
-  const teacherMap = useMemo(() => {
-    if (!teachersResponse || teachersResponse.status === "error") return {};
-
-    return teachersResponse.data.reduce<TeacherMap>((acc, teacher) => {
-      acc[teacher._id] = { name: teacher.name, email: teacher.email };
-      return acc;
-    }, {});
-  }, [teachersResponse]);
-
-  const teacherIds = useMemo(() => {
-    if (!teachersResponse || teachersResponse.status !== "success") return [];
-    return teachersResponse.data.map((teacher) => teacher._id);
-  }, [teachersResponse]);
+  const [isDeleting, setIsDeleting] = useState<Id<"exams"> | null>(null);
 
   const semesterMap = useMemo(() => {
     if (!semestersResponse || semestersResponse.status !== "success") return {};
-    return semestersResponse.data.reduce<Record<string, string>>((acc, semester) => {
-      acc[semester._id] = `${semester.academic_year} • Semester ${semester.number}`;
-      return acc;
-    }, {});
+    return semestersResponse.data.reduce<Record<string, string>>(
+      (acc, semester) => {
+        acc[semester._id] =
+          `${semester.academic_year} • Semester ${semester.number}`;
+        return acc;
+      },
+      {},
+    );
   }, [semestersResponse]);
 
   const semesterIds = useMemo(() => {
@@ -103,38 +88,34 @@ export function SubjectsPanel() {
     return semestersResponse.data.map((semester) => semester._id);
   }, [semestersResponse]);
 
-  const getTeacherLabel = (teacherId: Id<"users"> | null) => {
-    if (!teacherId) return "";
-    const teacher = teacherMap[teacherId];
-    if (!teacher) return "";
-    return `${teacher.name} (${teacher.email})`;
-  };
+  const sortedExams = useMemo(() => {
+    if (!examsResponse || examsResponse.status !== "success") return [];
+    return [...examsResponse.data].sort((a, b) => a.name.localeCompare(b.name));
+  }, [examsResponse]);
 
   const handleCreate = async () => {
     if (
       !formState.name.trim() ||
-      !formState.code.trim() ||
-      !formState.teacherId ||
-      !formState.semesterId
+      !formState.semesterId ||
+      !formState.max_marks
     ) {
-      toast.error("Fill out all subject details before saving");
+      toast.error("Fill out all exam details before saving");
       return;
     }
 
     setIsSaving(true);
     try {
-      await newSubject({
-        subject_name: formState.name.trim(),
-        subject_code: formState.code.trim(),
-        teacher: formState.teacherId,
+      await addExam({
+        name: formState.name.trim(),
         semester: formState.semesterId,
+        max_marks: formState.max_marks,
       });
-      toast.success("Subject created successfully");
-      setFormState({ name: "", code: "", teacherId: null, semesterId: null });
+      toast.success("Exam created successfully");
+      setFormState({ name: "", semesterId: null, max_marks: 0 });
       setIsCreateOpen(false);
     } catch (error) {
-      console.error("Failed to create subject:", error);
-      toast.error("Failed to create subject");
+      console.error("Failed to create exam:", error);
+      toast.error("Failed to create exam");
     } finally {
       setIsSaving(false);
     }
@@ -145,43 +126,41 @@ export function SubjectsPanel() {
 
     if (
       !editState.name.trim() ||
-      !editState.code.trim() ||
-      !editState.teacherId ||
-      !editState.semesterId
+      !editState.semesterId ||
+      !editState.max_marks
     ) {
-      toast.error("Fill out all subject details before saving");
+      toast.error("Fill out all exam details before saving");
       return;
     }
 
     setIsUpdating(true);
     try {
-      await patchSubject({
-        id: editState.id,
+      await patchExam({
+        exam_id: editState.id,
         data: {
-          subject_name: editState.name.trim(),
-          subject_code: editState.code.trim(),
-          teacher: editState.teacherId,
+          name: editState.name.trim(),
           semester: editState.semesterId,
+          max_marks: editState.max_marks,
         },
       });
-      toast.success("Subject updated successfully");
+      toast.success("Exam updated successfully");
       setEditState(null);
     } catch (error) {
-      console.error("Failed to update subject:", error);
-      toast.error("Failed to update subject");
+      console.error("Failed to update exam:", error);
+      toast.error("Failed to update exam");
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleDelete = async (subjectId: Id<"subjects">, subjectName: string) => {
-    setIsDeleting(subjectId);
+  const handleDelete = async (examId: Id<"exams">, examName: string) => {
+    setIsDeleting(examId);
     try {
-      await deleteSubject({ subject_id: subjectId });
-      toast.success(`${subjectName} deleted successfully`);
+      await deleteExam({ exam_id: examId });
+      toast.success(`${examName} deleted successfully`);
     } catch (error) {
-      console.error("Failed to delete subject:", error);
-      toast.error("Failed to delete subject");
+      console.error("Failed to delete exam:", error);
+      toast.error("Failed to delete exam");
     } finally {
       setIsDeleting(null);
     }
@@ -191,9 +170,9 @@ export function SubjectsPanel() {
     <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-6">
         <div className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Subjects</CardTitle>
+          <CardTitle className="text-2xl font-bold">Exams</CardTitle>
           <CardDescription>
-            Create and manage subjects tied to semesters and teachers.
+            Track exams tied to specific semesters.
           </CardDescription>
         </div>
 
@@ -202,41 +181,40 @@ export function SubjectsPanel() {
           onOpenChange={(open) => {
             setIsCreateOpen(open);
             if (!open) {
-              setFormState({
-                name: "",
-                code: "",
-                teacherId: null,
-                semesterId: null,
-              });
+              setFormState({ name: "", semesterId: null, max_marks: 0 });
             }
           }}
         >
           <DialogTrigger asChild>
             <Button size="sm" className="bg-sky-500 hover:bg-sky-600">
               <PlusIcon className="mr-2 size-4" />
-              Add Subject
+              Add Exam
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-            <DialogTitle>Add Subject</DialogTitle>
-            <DialogDescription>
-              Provide a subject name, unique code, semester, and teacher assignment.
-            </DialogDescription>
+              <DialogTitle>Add Exam</DialogTitle>
+              <DialogDescription>
+                Provide an exam name and assign it to a semester.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <Input
-                placeholder="Subject name"
+                placeholder="Exam name"
                 value={formState.name}
                 onChange={(e) =>
                   setFormState((prev) => ({ ...prev, name: e.target.value }))
                 }
               />
               <Input
-                placeholder="Subject code"
-                value={formState.code}
+                placeholder="Maximum Marks"
+                value={formState.max_marks ? formState.max_marks : ""}
+                type="number"
                 onChange={(e) =>
-                  setFormState((prev) => ({ ...prev, code: e.target.value }))
+                  setFormState((prev) => ({
+                    ...prev,
+                    max_marks: Number(e.target.value),
+                  }))
                 }
               />
               <div className="space-y-2">
@@ -271,45 +249,9 @@ export function SubjectsPanel() {
                     ? "Loading semesters..."
                     : semestersResponse.status === "error"
                       ? "Failed to load semesters"
-                      : "Assign this subject to a semester."}
+                      : "Assign this exam to a semester."}
                 </p>
               </div>
-              <Combobox
-                value={formState.teacherId}
-                onValueChange={(value) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    teacherId: value ? (value as Id<"users">) : null,
-                  }))
-                }
-                itemToStringLabel={(value) =>
-                  getTeacherLabel(value as Id<"users">)
-                }
-                items={teacherIds}
-              >
-                <ComboboxInput
-                  placeholder="Select teacher..."
-                  showClear
-                  disabled={
-                    teachersResponse === undefined ||
-                    teachersResponse.status === "error"
-                  }
-                />
-                <ComboboxContent>
-                  <ComboboxEmpty>
-                    {teachersResponse === undefined
-                      ? "Loading teachers..."
-                      : "No active teachers found."}
-                  </ComboboxEmpty>
-                  <ComboboxList>
-                    {(item) => (
-                      <ComboboxItem key={item} value={item}>
-                        {getTeacherLabel(item as Id<"users">)}
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <DialogClose asChild>
@@ -320,7 +262,7 @@ export function SubjectsPanel() {
                 onClick={handleCreate}
                 disabled={isSaving}
               >
-                {isSaving ? "Saving..." : "Save Subject"}
+                {isSaving ? "Saving..." : "Save Exam"}
               </Button>
             </div>
           </DialogContent>
@@ -332,37 +274,31 @@ export function SubjectsPanel() {
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow>
-                <TableHead className="font-semibold">Subject</TableHead>
-                <TableHead className="font-semibold">Code</TableHead>
+                <TableHead className="font-semibold">Exam</TableHead>
                 <TableHead className="font-semibold">Semester</TableHead>
-                <TableHead className="font-semibold">Teacher</TableHead>
-                <TableHead className="font-semibold text-right">Actions</TableHead>
+                <TableHead className="font-semibold">M.M.</TableHead>
+
+                <TableHead className="font-semibold text-right">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-                {subjectsResponse?.status === "success" &&
-                subjectsResponse.data.length > 0 ? (
-                  subjectsResponse.data.map((subject) => (
-                    <TableRow
-                      key={subject._id}
+              {examsResponse?.status === "success" && sortedExams.length > 0 ? (
+                sortedExams.map((exam) => (
+                  <TableRow
+                    key={exam._id}
                     className="hover:bg-muted/20 transition-colors"
                   >
-                    <TableCell className="font-medium">
-                      {subject.subject_name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {subject.subject_code}
-                    </TableCell>
+                    <TableCell className="font-medium">{exam.name}</TableCell>
                     <TableCell>
-                      {semesterMap[subject.semester] || "Unassigned"}
+                      {semesterMap[exam.semester] || "Unassigned"}
                     </TableCell>
-                    <TableCell>
-                      {getTeacherLabel(subject.teacher) || "Unknown"}
-                    </TableCell>
+                    <TableCell>{exam.max_marks}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end items-center gap-2">
                         <Dialog
-                          open={editState?.id === subject._id}
+                          open={editState?.id === exam._id}
                           onOpenChange={(open) => {
                             if (!open) {
                               setEditState(null);
@@ -376,11 +312,10 @@ export function SubjectsPanel() {
                               className="size-8 hover:text-sky-500"
                               onClick={() =>
                                 setEditState({
-                                  id: subject._id,
-                                  name: subject.subject_name,
-                                  code: subject.subject_code,
-                                  teacherId: subject.teacher,
-                                  semesterId: subject.semester,
+                                  id: exam._id,
+                                  name: exam.name,
+                                  semesterId: exam.semester,
+                                  max_marks: exam.max_marks,
                                 })
                               }
                             >
@@ -389,33 +324,40 @@ export function SubjectsPanel() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Edit Subject</DialogTitle>
+                              <DialogTitle>Edit Exam</DialogTitle>
                               <DialogDescription>
-                                Update subject details, semester, and teacher assignment.
+                                Update the exam name and semester assignment.
                               </DialogDescription>
                             </DialogHeader>
                             {editState && (
                               <div className="space-y-4">
                                 <Input
-                                  placeholder="Subject name"
+                                  placeholder="Exam name"
                                   value={editState.name}
                                   onChange={(e) =>
                                     setEditState((prev) =>
                                       prev
                                         ? { ...prev, name: e.target.value }
-                                        : prev
+                                        : prev,
                                     )
                                   }
                                 />
                                 <Input
-                                  placeholder="Subject code"
-                                  value={editState.code}
+                                  placeholder="Maximum Marks"
+                                  value={
+                                    editState.max_marks
+                                      ? editState.max_marks
+                                      : ""
+                                  }
                                   onChange={(e) =>
                                     setEditState((prev) =>
                                       prev
-                                        ? { ...prev, code: e.target.value }
-                                        : prev
-                                      )
+                                        ? {
+                                            ...prev,
+                                            max_marks: Number(e.target.value),
+                                          }
+                                        : prev,
+                                    )
                                   }
                                 />
                                 <div className="space-y-2">
@@ -459,51 +401,9 @@ export function SubjectsPanel() {
                                       ? "Loading semesters..."
                                       : semestersResponse.status === "error"
                                         ? "Failed to load semesters"
-                                        : "Assign this subject to a semester."}
+                                        : "Assign this exam to a semester."}
                                   </p>
                                 </div>
-                                <Combobox
-                                  value={editState.teacherId}
-                                  onValueChange={(value) =>
-                                    setEditState((prev) =>
-                                      prev
-                                        ? {
-                                            ...prev,
-                                            teacherId: value
-                                              ? (value as Id<"users">)
-                                              : null,
-                                          }
-                                        : prev
-                                    )
-                                  }
-                                  itemToStringLabel={(value) =>
-                                    getTeacherLabel(value as Id<"users">)
-                                  }
-                                  items={teacherIds}
-                                >
-                                  <ComboboxInput
-                                    placeholder="Select teacher..."
-                                    showClear
-                                    disabled={
-                                      teachersResponse === undefined ||
-                                      teachersResponse.status === "error"
-                                    }
-                                  />
-                                  <ComboboxContent>
-                                    <ComboboxEmpty>
-                                      {teachersResponse === undefined
-                                        ? "Loading teachers..."
-                                        : "No active teachers found."}
-                                    </ComboboxEmpty>
-                                    <ComboboxList>
-                                      {(item) => (
-                                        <ComboboxItem key={item} value={item}>
-                                          {getTeacherLabel(item as Id<"users">)}
-                                        </ComboboxItem>
-                                      )}
-                                    </ComboboxList>
-                                  </ComboboxContent>
-                                </Combobox>
                               </div>
                             )}
                             <div className="flex justify-end gap-3 pt-4">
@@ -533,7 +433,7 @@ export function SubjectsPanel() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Delete {subject.subject_name}</DialogTitle>
+                              <DialogTitle>Delete {exam.name}</DialogTitle>
                               <DialogDescription>
                                 This action cannot be undone.
                               </DialogDescription>
@@ -544,10 +444,14 @@ export function SubjectsPanel() {
                               </DialogClose>
                               <Button
                                 variant="destructive"
-                                onClick={() => handleDelete(subject._id, subject.subject_name)}
-                                disabled={isDeleting === subject._id}
+                                onClick={() =>
+                                  handleDelete(exam._id, exam.name)
+                                }
+                                disabled={isDeleting === exam._id}
                               >
-                                {isDeleting === subject._id ? "Deleting..." : "Delete Subject"}
+                                {isDeleting === exam._id
+                                  ? "Deleting..."
+                                  : "Delete Exam"}
                               </Button>
                             </div>
                           </DialogContent>
@@ -558,13 +462,15 @@ export function SubjectsPanel() {
                 ))
               ) : (
                 <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="h-24 text-center text-muted-foreground"
-                    >
-                    {subjectsResponse?.status === "error"
-                      ? `Failed to load subjects. ${subjectsResponse.error}`
-                      : "No subjects found."}
+                  <TableCell
+                    colSpan={3}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    {examsResponse === undefined
+                      ? "Loading exams..."
+                      : examsResponse.status === "error"
+                        ? `Failed to load exams. ${examsResponse.error}`
+                        : "No exams found."}
                   </TableCell>
                 </TableRow>
               )}

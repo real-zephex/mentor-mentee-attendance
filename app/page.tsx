@@ -9,6 +9,7 @@ import { DashboardOverview } from "@/components/custom/dashboardOverview";
 import { UserCircle, BookOpen, Calendar, Flag, LayoutGrid } from "lucide-react";
 import AttendanceTable from "@/components/custom/attendance/attendanceTable";
 import AttendanceOverview from "@/components/custom/overview/AttendanceOverview";
+import MarksTable from "@/components/custom/marks/marksTable";
 
 const Homepage = () => {
   return (
@@ -70,6 +71,16 @@ const Homepage = () => {
                 Attendance
               </div>
             </TabsTrigger>
+            <TabsTrigger
+              value="marks"
+              className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-sky-500 data-[state=active]:text-sky-500 data-[state=active]:shadow-none"
+            >
+              <div className="flex items-center gap-2">
+                <Flag className="size-4" />
+               Marks 
+              </div>
+            </TabsTrigger>
+ 
           </TabsList>
         </div>
 
@@ -102,6 +113,12 @@ const Homepage = () => {
           className="mt-0 border-none p-0 outline-none"
         >
           <AttendanceTable />
+        </TabsContent>
+        <TabsContent
+          value="marks"
+          className="mt-0 border-none p-0 outline-none"
+        >
+        <MarksTable />
         </TabsContent>
       </Tabs>
     </main>

@@ -60,7 +60,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getCurrentUser } from "@/convex/functions/users_queries";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 // type ReducerProps = {

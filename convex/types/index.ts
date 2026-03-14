@@ -55,8 +55,34 @@ export const Subjects = v.object({
   subject_name: v.string(),
   subject_code: v.string(),
   teacher: v.id("users"),
+  semester: v.id("semesters"),
 });
 export type Subjects = Infer<typeof Subjects>;
+
+// MARK: We have SEM
+export const Semester = v.object({
+  number: v.number(),
+  academic_year: v.string(),
+});
+export type Semester = Infer<typeof Semester>;
+
+export const Marks = v.object({
+  student: v.id("students"),
+  subject: v.id("subjects"),
+  semester: v.id("semesters"),
+  marks: v.number(),
+  exam: v.id("exams"),
+  class: v.id("classes")
+});
+export type Marks = Infer<typeof Marks>;
+
+// MARK: We are here
+export const Exams = v.object({
+  name: v.string(),
+  semester: v.id("semesters"),
+  max_marks: v.number()
+});
+export type Exams = Infer<typeof Exams>;
 
 // Function Return Types
 type Success<T> = {

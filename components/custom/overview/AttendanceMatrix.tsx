@@ -36,9 +36,7 @@ export function AttendanceMatrix({
   const [sortBy, setSortBy] = useState<SortType>("roll");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  const [subjectFilter, setSubjectFilter] = useState<"all" | Id<"subjects">>(
-    "all",
-  );
+  const [subjectFilter, setSubjectFilter] = useState<"all" | Id<"subjects">>("all");
 
   const matrixResponse = useQuery(
     api.functions.attendance_queries.GetAttendanceMatrix,
@@ -50,46 +48,20 @@ export function AttendanceMatrix({
   const isLoading = matrixResponse === undefined;
   const isError = matrixResponse?.status === "error";
 
-  const subjectOptions = useMemo(() => {
-    if (!matrixResponse || matrixResponse.status === "error") return [];
-
-    const subjects = Array.isArray(matrixResponse.data.subjects)
-      ? matrixResponse.data.subjects
-      : [];
-    const subjectMap = new Map(
-      subjects.map((subject) => [subject._id, subject.subject_name]),
-    );
-    const subjectIds = Array.from(
-      new Set(matrixResponse.data.sessions.map((session) => session.subject)),
-    );
-
-    return subjectIds
-      .map((subjectId) => ({
-        id: subjectId,
-        label: subjectMap.get(subjectId) ?? "Unknown subject",
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [matrixResponse]);
-
   // Calculate sorted and filtered data
   const processedData = useMemo(() => {
     if (!matrixResponse || matrixResponse.status === "error") return null;
 
-    const { students, sessions, attendance_matrix } = matrixResponse.data;
+    const { students, sessions, subjects, attendance_matrix } = matrixResponse.data;
 
     // 1. Filter sessions by date range and subject
-    let filteredSessions = sessions.filter((session) => {
+    const filteredSessions = sessions.filter((session) => {
       const sessionDate = new Date(session.session_date);
       if (dateRange.from && sessionDate < dateRange.from) return false;
       if (dateRange.to && sessionDate > dateRange.to) return false;
+      if (subjectFilter !== "all" && session.subject !== subjectFilter) return false;
       return true;
     });
-
-    if (subjectFilter !== "all") {
-      filteredSessions = filteredSessions.filter(
-        (session) => session.subject === subjectFilter,
-      );
-    }
 
     // 2. Calculate individual attendance percentages for the filtered sessions
     const studentAttendanceMap = new Map<Id<"students">, number>();
@@ -140,11 +112,18 @@ export function AttendanceMatrix({
       Array.from(studentAttendanceMap.values()).reduce((a, b) => a + b, 0) /
       (students.length || 1);
 
+    // Derive unique subject options from all sessions (not filtered)
+    const subjectOptions = subjects.map((s) => ({
+      id: s._id,
+      label: `${s.subject_name} (${s.subject_code})`,
+    }));
+
     return {
       sortedStudents,
       filteredSessions,
       attendance_matrix,
       studentAttendanceMap,
+      subjectOptions,
       stats: {
         goodCount,
         fairCount,
@@ -192,6 +171,7 @@ export function AttendanceMatrix({
     filteredSessions,
     attendance_matrix,
     studentAttendanceMap,
+    subjectOptions,
     stats,
   } = processedData;
 
@@ -229,8 +209,8 @@ export function AttendanceMatrix({
         onReset={() => {
           setSortBy("roll");
           setSortOrder("asc");
-          setSubjectFilter("all");
           setDateRange({});
+          setSubjectFilter("all");
         }}
       />
 

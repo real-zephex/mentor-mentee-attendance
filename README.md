@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mentor-Mentee Attendance
 
-## Getting Started
+Attendance management system for multi-teacher, multi-subject classrooms built with Next.js, Convex, and Clerk.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Role-based access with Clerk authentication and Convex authorization (admin, teacher, student, user).
+- Admin verification workflow to approve users, assign roles, and link student records.
+- Class, student, and subject management with validation and indexing.
+- Session scheduling tied to class + subject + teacher with date/time metadata.
+- Attendance recording per session with bulk defaults and status tracking.
+- Attendance analytics matrix with subject filter, date range filter, sorting, and stats.
+- Teacher views restricted to their sessions and assigned subjects.
+- Cascade cleanup when deleting classes/students to prevent orphaned attendance.
+
+## How It Works
+
+### Authentication and User Lifecycle
+
+1. Users sign in via Clerk.
+2. Clerk webhooks create/update/delete users in Convex.
+3. New users are marked as `pending` until an admin confirms access.
+4. Admins approve users, set roles, and can link student accounts.
+
+### Core Data Model
+
+- `users`: role, status, and optional student link.
+- `classes`: class name, year, and room.
+- `students`: roll number, name, and class.
+- `subjects`: subject name, code, and assigned teacher.
+- `sessions`: class, subject, date/time, remarks, and creator.
+- `attendance`: session + student + status (`P`, `A`, `DL`, `UM`).
+
+### Session -> Attendance Flow
+
+1. A session is created for a class and subject.
+2. Convex pre-creates attendance rows for every student in the class with status `UM`.
+3. Teachers update attendance statuses during or after the session.
+
+### Attendance Matrix Analytics
+
+1. Pick a class in the Analysis tab.
+2. Filter sessions by subject and date range.
+3. Sort students by roll, name, or attendance percentage.
+4. Stats show good/fair/poor buckets and class average.
+
+## UI Areas
+
+- **Analysis**: class selection and attendance matrix analytics.
+- **Students**: admin-only student CRUD.
+- **Classes**: admin-only class CRUD.
+- **Sessions**: session scheduling and editing; teachers see only their sessions.
+- **Attendance**: per-session attendance marking and filtering.
+- **Admin Dashboard**: user verification and subject management.
+
+## Tech Stack
+
+- Next.js App Router + React 19
+- Convex for database, queries, and mutations
+- Clerk for authentication and webhooks
+- Tailwind CSS v4 + shadcn/ui
+
+## Local Setup
+
+### Requirements
+
+- Bun
+- Convex CLI (via `bunx convex`)
+- Clerk application with JWT template `convex`
+
+### Environment Variables
+
+Set the following in your local environment (typically `.env.local`):
+
+```
+NEXT_PUBLIC_CONVEX_URL=
+CLERK_JWT_ISSUER_DOMAIN=
+CLERK_WEBHOOK_SECRET=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Notes:
+- `CLERK_JWT_ISSUER_DOMAIN` must match the Clerk JWT template `convex`.
+- `CLERK_WEBHOOK_SECRET` is used by the Convex HTTP webhook handler.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Clerk Webhook Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Create a Clerk webhook that points to your Convex HTTP endpoint (root path).
+- Subscribe to: `user.created`, `user.updated`, `user.deleted`.
 
-## Learn More
+### Running Locally
 
-To learn more about Next.js, take a look at the following resources:
+In one terminal, start Convex:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+bunx convex dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+In another terminal, start Next.js:
 
-## Deploy on Vercel
+```
+bun run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open `http://localhost:3000`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Scripts
+
+```
+bun run dev
+bun run build
+bun run lint
+```
+
+## Project Structure
+
+- `app/`: Next.js routes and layout
+- `components/custom/`: feature components (attendance, sessions, overview, admin)
+- `components/ui/`: shadcn UI primitives
+- `convex/`: schema, auth config, queries, mutations, and webhooks
+- `hooks/`: shared hooks for data access and auth state
+
+## Operational Notes
+
+- Only admin and teacher roles can access the main UI.
+- Students are managed as records and can be linked to users for reporting.
+- There is no automated test suite; use `bun run build` and `bun run lint` for validation.
