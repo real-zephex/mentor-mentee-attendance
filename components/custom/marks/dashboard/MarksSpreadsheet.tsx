@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Trash } from "lucide-react";
 import { EditMarkDialog } from "./EditMarkDialog";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Doc } from "@/convex/_generated/dataModel";
 
 // Enriched row shape after joining marks with student/exam/subject data
 export type MarksRowData = Doc<"marks"> & {
